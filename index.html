@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SMN Cutz · Book a cut</title>
+<meta name="description" content="Book a cut with SMN Cutz in New Brunswick, NJ. Pick what you want and I'll text you a time.">
+<meta property="og:title" content="SMN Cutz · Book a cut">
+<meta property="og:description" content="Pick what you want and I'll text you a time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow column, phone first: name, menu of services as big tap tiles, your info, send. */
+:root{
+  --bg:#EEF0F2; --surface:#FFFFFF; --surface-2:#F6F7F8; --line:#D9DDE2;
+  --ink:#15181E; --ink-2:#555C68; --ink-3:#8A909B;
+  --accent:#A3172E; --accent-ink:#FFFFFF; --accent-soft:#F7E3E6;
+  --navy:#1E3A64; --navy-soft:#E1E8F3; --ok:#1D7A4A; --ok-soft:#DDF1E5;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0F1115; --surface:#181B21; --surface-2:#1F232A; --line:#2C313A;
+  --ink:#ECEEF1; --ink-2:#AAB0BA; --ink-3:#737A86;
+  --accent:#E3485F; --accent-ink:#16080B; --accent-soft:#3A1920;
+  --navy:#8DB1E8; --navy-soft:#1C2A40; --ok:#5CCB8C; --ok-soft:#15301F; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);min-height:100vh}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+[hidden]{display:none!important}
+.pole{height:6px;background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,var(--surface) 10px 16px,var(--navy) 16px 26px,var(--surface) 26px 32px)}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:28px 48px;display:grid;gap:22px}
+.hero h1{margin:0;font:800 clamp(56px,16vw,92px)/.9 var(--f-display);text-transform:uppercase;letter-spacing:.01em}
+.hero p{margin:10px 0 0;color:var(--ink-2);font-size:17px;max-width:40ch}
+.hero .where{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tag{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);text-decoration:none}
+a.tag:hover{border-color:var(--ink-3)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
+.card h2{margin:0;font:800 26px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;display:flex;gap:10px;align-items:baseline}
+.card h2 .n{font:500 13px var(--f-mono);color:var(--ink-3);letter-spacing:0}
+.tiles{display:grid;gap:10px}
+.tile{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface-2);border:1.5px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
+.tile:hover{border-color:var(--ink-3)}
+.tile[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.tile .box{width:24px;height:24px;border-radius:7px;border:2px solid var(--ink-3);flex:none;display:grid;place-items:center}
+.tile[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.tile[aria-pressed="true"] .box::after{content:"";width:7px;height:12px;border:solid var(--accent-ink);border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.tile .txt{flex:1;min-width:0}
+.tile .txt b{display:block;font-size:17px;font-weight:600}
+.tile .txt span{font-size:14px;color:var(--ink-2)}
+.tile .pr{font:500 16px var(--f-mono);white-space:nowrap}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px}
+.total b{font:800 30px var(--f-display);font-variant-numeric:tabular-nums}
+.total span{color:var(--ink-2);font-size:14px}
+.f{display:grid;gap:5px}
+.f label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2)}
+.f input,.f textarea{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:12px;font-size:16px}
+.f textarea{min-height:70px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.send{border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:800 24px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;padding:18px;cursor:pointer;width:100%}
+.send:disabled{opacity:.6;cursor:default}
+.fine{font-size:14px;color:var(--ink-2);margin:0;text-align:center}
+.err{color:var(--accent);font-size:14px}
+.hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.done{text-align:center;padding:30px 18px}
+.done .check{width:64px;height:64px;border-radius:50%;background:var(--ok-soft);display:grid;place-items:center;margin:0 auto 10px}
+.done .check::after{content:"";width:16px;height:28px;border:solid var(--ok);border-width:0 4px 4px 0;transform:translateY(-3px) rotate(45deg)}
+.done h2{justify-content:center;font-size:34px}
+.done p{color:var(--ink-2);margin:8px auto 0;max-width:36ch}
+footer{text-align:center;color:var(--ink-3);font-size:13px}
+footer a{color:inherit}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="/config.js"></script>
+</head>
+<body>
+<div class="pole" aria-hidden="true"></div>
+<main class="wrap">
+  <header class="hero">
+    <h1>SMN Cutz</h1>
+    <p>Clean cuts in New Brunswick. Pick what you want, send it, and I'll text you a time.</p>
+    <div class="where"><span class="tag">New Brunswick, NJ</span><span class="tag">Near Rutgers College Ave</span><a class="tag" href="https://instagram.com/smncutz" target="_blank" rel="noopener">@smncutz</a></div>
+  </header>
+
+  <form id="bookForm" class="card-stack" style="display:grid;gap:22px" novalidate>
+    <section class="card" aria-labelledby="h1">
+      <h2 id="h1"><span class="n">1</span>What do you want?</h2>
+      <div class="tiles" id="tiles">
+        <button type="button" class="tile" data-id="Cut" aria-pressed="true"><span class="box"></span><span class="txt"><b>Cut</b><span>Scissors and clippers, cleaned up</span></span><span class="pr">$25</span></button>
+        <button type="button" class="tile" data-id="Beard" aria-pressed="false"><span class="box"></span><span class="txt"><b>Beard / facial hair</b><span>Shape-up and lineup</span></span><span class="pr" data-p="beard">+$10</span></button>
+        <button type="button" class="tile" data-id="Eyebrows" aria-pressed="false"><span class="box"></span><span class="txt"><b>Eyebrows</b><span>Quick clean-up</span></span><span class="pr" data-p="brows">+$5</span></button>
+      </div>
+      <div class="total"><span id="sumLbl">Cut · about 30 min</span><b id="sum">$25</b></div>
+    </section>
+
+    <section class="card" aria-labelledby="h2">
+      <h2 id="h2"><span class="n">2</span>Your info</h2>
+      <div class="f"><label for="name">Name</label><input id="name" autocomplete="name" maxlength="80" required></div>
+      <div class="f"><label for="phone">Phone number</label><input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30" placeholder="(732) 555-0123" required></div>
+      <div class="f"><label>Best times for you</label>
+        <div class="chips" id="when">
+          <button type="button" class="chip" aria-pressed="false">Weekdays</button>
+          <button type="button" class="chip" aria-pressed="false">Weekends</button>
+          <button type="button" class="chip" aria-pressed="false">Mornings</button>
+          <button type="button" class="chip" aria-pressed="false">Afternoons</button>
+          <button type="button" class="chip" aria-pressed="false">Evenings</button>
+        </div>
+      </div>
+      <div class="f"><label for="notes">Anything else? <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)">(optional)</span></label><textarea id="notes" maxlength="400" placeholder="e.g. low taper, free after 3 on Thursday"></textarea></div>
+      <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" tabindex="-1" autocomplete="off"></div>
+    </section>
+
+    <div style="display:grid;gap:10px">
+      <div class="err" id="err" role="alert" hidden></div>
+      <button class="send" id="sendBtn" type="submit">Send booking request</button>
+      <p class="fine">No time slots to pick. I'll text you to lock in a time.</p>
+    </div>
+  </form>
+
+  <section class="card done" id="done" hidden aria-live="polite">
+    <div class="check" aria-hidden="true"></div>
+    <h2 id="doneTitle">Got it!</h2>
+    <p id="doneMsg"></p>
+    <button type="button" class="tag" id="again" style="justify-self:center;cursor:pointer;margin-top:10px">Book for someone else</button>
+  </section>
+
+  <footer>SMN Cutz · <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">Instagram</a></footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const picks = new Set(["Cut"]);
+const MENU = { Cut:{price:25, mins:30}, Beard:{price:10, alone:15, mins:15}, Eyebrows:{price:5, alone:5, mins:10} };
+function update(){
+  const cut = picks.has("Cut");
+  let total = 0, mins = 0;
+  for (const p of picks){ const m = MENU[p]; total += (cut || p==="Cut") ? m.price : (m.alone ?? m.price); mins += m.mins; }
+  $("#sum").textContent = "$"+total;
+  const names = ["Cut","Beard","Eyebrows"].filter(p=>picks.has(p));
+  $("#sumLbl").textContent = (names.length ? names.join(" + ") : "Nothing picked") + (names.length ? " · about "+Math.max(15,mins)+" min" : "");
+  document.querySelector('[data-p="beard"]').textContent = cut ? "+$10" : "$15";
+  document.querySelector('[data-p="brows"]').textContent = cut ? "+$5" : "$5";
+}
+$("#tiles").addEventListener("click", e => {
+  const t = e.target.closest(".tile"); if (!t) return;
+  const id = t.dataset.id, on = t.getAttribute("aria-pressed")!=="true";
+  t.setAttribute("aria-pressed", String(on)); on ? picks.add(id) : picks.delete(id); update();
+});
+$("#when").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  c.setAttribute("aria-pressed", String(c.getAttribute("aria-pressed")!=="true"));
+});
+update();
+
+let sb = null;
+try { sb = window.supabase.createClient(window.SMN.url, window.SMN.key, { auth:{ persistSession:false } }); } catch(_){}
+
+function showErr(msg){ const el = $("#err"); el.textContent = msg; el.hidden = !msg; }
+$("#bookForm").addEventListener("submit", async e => {
+  e.preventDefault(); showErr("");
+  if ($("#website").value) return;                       // bots fill hidden fields
+  const name = $("#name").value.trim(), phone = $("#phone").value.trim();
+  if (!picks.size) return showErr("Pick at least one thing you want.");
+  if (!name) { $("#name").focus(); return showErr("Add your name so I know who's coming."); }
+  if (phone.replace(/\D/g,"").length < 10) { $("#phone").focus(); return showErr("Add a phone number with area code so I can text you."); }
+  const when = [...document.querySelectorAll("#when .chip[aria-pressed=true]")].map(c=>c.textContent);
+  const notes = [when.length ? "Best: "+when.join(", ") : "", $("#notes").value.trim()].filter(Boolean).join(" · ").slice(0,500);
+  if (!sb) return showErr("Booking isn't working right now. DM @smncutz on Instagram instead.");
+  const btn = $("#sendBtn"); btn.disabled = true; btn.textContent = "Sending…";
+  const { error } = await sb.from("requests").insert({ name:name.slice(0,80), phone:phone.slice(0,30), services:["Cut","Beard","Eyebrows"].filter(p=>picks.has(p)), notes });
+  btn.disabled = false; btn.textContent = "Send booking request";
+  if (error) return showErr("That didn't go through. Try again, or DM @smncutz on Instagram.");
+  $("#bookForm").hidden = true; $("#done").hidden = false;
+  $("#doneTitle").textContent = "Got it, "+name.split(/\s+/)[0]+"!";
+  $("#doneMsg").textContent = "I'll text you at "+phone+" to lock in a time.";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+$("#again").addEventListener("click", () => {
+  $("#bookForm").reset(); picks.clear(); picks.add("Cut");
+  document.querySelectorAll(".tile").forEach(t=>t.setAttribute("aria-pressed", String(t.dataset.id==="Cut")));
+  document.querySelectorAll("#when .chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+  update(); $("#done").hidden = true; $("#bookForm").hidden = false;
+});
+})();
+</script>
+</body>
+</html>

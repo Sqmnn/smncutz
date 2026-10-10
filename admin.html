@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SMN Cutz · Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: shop-counter app — header with pole stripe, three views (Today / Bookings / Clients), client file opens as a side sheet */
+:root{
+  --bg:#EEF0F2; --surface:#FFFFFF; --surface-2:#F6F7F8; --line:#D9DDE2;
+  --ink:#15181E; --ink-2:#555C68; --ink-3:#8A909B;
+  --accent:#A3172E; --accent-ink:#FFFFFF; --accent-soft:#F7E3E6;
+  --navy:#1E3A64; --navy-soft:#E1E8F3;
+  --ok:#1D7A4A; --ok-soft:#DDF1E5; --warn:#A35C00; --warn-soft:#FBEBD2;
+  --shadow:0 1px 2px rgba(20,24,30,.06),0 8px 24px rgba(20,24,30,.08);
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1115; --surface:#181B21; --surface-2:#1F232A; --line:#2C313A;
+  --ink:#ECEEF1; --ink-2:#AAB0BA; --ink-3:#737A86;
+  --accent:#E3485F; --accent-ink:#16080B; --accent-soft:#3A1920;
+  --navy:#8DB1E8; --navy-soft:#1C2A40;
+  --ok:#5CCB8C; --ok-soft:#15301F; --warn:#F0A646; --warn-soft:#3A2A12;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1115; --surface:#181B21; --surface-2:#1F232A; --line:#2C313A;
+  --ink:#ECEEF1; --ink-2:#AAB0BA; --ink-3:#737A86;
+  --accent:#E3485F; --accent-ink:#16080B; --accent-soft:#3A1920;
+  --navy:#8DB1E8; --navy-soft:#1C2A40;
+  --ok:#5CCB8C; --ok-soft:#15301F; --warn:#F0A646; --warn-soft:#3A2A12;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.top-in{max-width:1120px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1}
+.brand h1{margin:0;font:800 28px/1 var(--f-display);letter-spacing:.02em;text-transform:uppercase}
+.brand .date{color:var(--ink-3);font-size:13px;white-space:nowrap}
+.pole{height:5px;background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,var(--surface) 10px 16px,var(--navy) 16px 26px,var(--surface) 26px 32px)}
+.tabs{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tab{border:0;background:none;padding:7px 16px;border-radius:999px;font-weight:600;color:var(--ink-2);font-size:14px}
+.tab[aria-current="true"]{background:var(--ink);color:var(--bg)}
+.actions{display:flex;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.small{padding:5px 10px;font-size:13px;border-radius:7px}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.danger{color:var(--accent);border-color:var(--accent-soft)}
+.btn.danger.armed{background:var(--accent);color:var(--accent-ink)}
+
+main{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 100px}
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--navy-soft);color:var(--ink);border-radius:var(--r);padding:10px 14px;margin-bottom:18px;font-size:14px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:22px}
+.stat{background:var(--surface);padding:14px 16px}
+.stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600}
+.stat .v{font:800 34px/1.1 var(--f-display);margin-top:4px;font-variant-numeric:tabular-nums}
+.stat .s{font-size:13px;color:var(--ink-2)}
+
+.cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px;align-items:start}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 10px}
+.sec-h h2{margin:0;font:800 22px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.sec-h .meta{color:var(--ink-3);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+
+/* appointment rows */
+.appt{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.appt:first-child{border-top:0}
+.appt .t{font:500 15px var(--f-mono);font-variant-numeric:tabular-nums}
+.appt .who{min-width:0}
+.appt .who b{font-weight:600;cursor:pointer}
+.appt .who b:hover{text-decoration:underline}
+.appt .svc{color:var(--ink-2);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appt .right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.appt.is-done .t,.appt.is-cancelled .t,.appt.is-no_show .t{color:var(--ink-3)}
+.appt.is-cancelled .who b{text-decoration:line-through;color:var(--ink-3)}
+.pill{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill.booked{background:var(--navy-soft);color:var(--navy)}
+.pill.done{background:var(--ok-soft);color:var(--ok)}
+.pill.no_show{background:var(--warn-soft);color:var(--warn)}
+.pill.cancelled{background:var(--surface-2);color:var(--ink-3)}
+.pill.due{background:var(--accent-soft);color:var(--accent)}
+.req{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.req:first-child{border-top:0}
+.req .info{flex:1;min-width:200px}
+.req .info b{font-weight:600}
+.req .info div{font-size:13px;color:var(--ink-2)}
+.req .rn{font-style:italic}
+.req .rt{color:var(--ink-3)!important;font-size:12px!important}
+.req .ra{display:flex;gap:6px;align-items:center}
+.count{display:inline-block;background:var(--accent);color:var(--accent-ink);font:600 13px/1 var(--f-body);padding:4px 8px;border-radius:999px;vertical-align:middle;letter-spacing:0}
+.syncline a{color:var(--navy)}
+.pill.online{background:var(--ok-soft);color:var(--ok)}
+.bookcard{padding:12px 14px;display:grid;gap:10px;margin-bottom:22px}
+.linkrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.linkrow input{flex:1;min-width:180px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:8px 10px}
+.linkrow .link{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px}
+a.btn{text-decoration:none;color:inherit}
+.syncline{font-size:12.5px;color:var(--ink-2);display:flex;gap:8px;align-items:baseline}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none;transform:translateY(-1px)}
+.dot.ok{background:var(--ok)} .dot.bad{background:var(--warn)}
+.price{font-family:var(--f-mono);font-size:13px;color:var(--ink-2)}
+.empty{padding:28px 18px;text-align:center;color:var(--ink-2)}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+
+/* due list */
+.due{display:flex;gap:12px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
+.due:first-child{border-top:0}
+.due .info{flex:1;min-width:0}
+.due .info b{font-weight:600;cursor:pointer}
+.due .info div{font-size:13px;color:var(--ink-2)}
+
+/* avatar */
+.av{width:40px;height:40px;border-radius:50%;flex:none;background:var(--navy-soft);color:var(--navy);display:grid;place-items:center;font:800 16px var(--f-display);overflow:hidden;letter-spacing:.03em}
+.av img{width:100%;height:100%;object-fit:cover}
+.av.lg{width:76px;height:76px;font-size:28px}
+
+/* week */
+.weekbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.weekbar h2{margin:0 8px 0 0;font:800 22px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;flex:1;min-width:180px}
+.days{display:grid;gap:14px}
+.day h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);display:flex;gap:8px;align-items:center}
+.day.today h3{color:var(--accent)}
+.day h3 .c{color:var(--ink-3);font-weight:500;letter-spacing:0;text-transform:none}
+.day .none{font-size:13px;color:var(--ink-3);padding:4px 0 2px}
+
+/* clients */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.search{flex:1;min-width:200px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px}
+.sel{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;gap:12px;text-align:left;align-items:flex-start;width:100%}
+.ccard:hover{border-color:var(--ink-3)}
+.ccard .body{min-width:0;flex:1}
+.ccard .nm{font-weight:600;font-size:15px}
+.ccard .cut{font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccard .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.tag{font-size:12px;color:var(--ink-2);background:var(--surface-2);border-radius:6px;padding:2px 7px}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,12,16,.45);z-index:40}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--bg);z-index:41;overflow-y:auto;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet-h{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;z-index:2}
+.sheet-b{padding:18px 16px 40px;display:grid;gap:18px}
+.idcard{display:flex;gap:14px;align-items:center}
+.idcard h2{margin:0;font:800 30px/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere}
+.idcard .ph{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.minis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.mini{background:var(--surface);padding:10px 12px}
+.mini .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600}
+.mini .v{font:800 22px/1.15 var(--f-display);font-variant-numeric:tabular-nums}
+.mini .s{font-size:12px;color:var(--ink-2)}
+.cutcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.cutcard .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600;margin-bottom:3px}
+.cutcard p{margin:0;white-space:pre-wrap}
+.cutcard p + .k{margin-top:10px}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.photo{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--surface-2);border:0;padding:0;max-width:100%}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo .d{position:absolute;left:0;right:0;bottom:0;font-size:11px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:10px 6px 4px;text-align:left}
+.upload{aspect-ratio:1;border:1.5px dashed var(--line);border-radius:8px;display:grid;place-items:center;text-align:center;color:var(--ink-2);font-size:13px;cursor:pointer;background:var(--surface)}
+.upload:hover{border-color:var(--ink-3)}
+.hist .appt{grid-template-columns:96px minmax(0,1fr) auto}
+
+/* lightbox */
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
+.lb img{max-width:100%;max-height:78vh;border-radius:8px}
+.lb .bar{display:flex;gap:8px;color:#fff;align-items:center;flex-wrap:wrap;justify-content:center}
+.lb .btn{background:#222;border-color:#444;color:#fff}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(10,12,16,.5);overflow-y:auto}
+.mbox{background:var(--surface);border-radius:14px;width:min(480px,100%);box-shadow:var(--shadow);max-height:calc(100% - 20px);overflow-y:auto}
+.mbox h2{margin:0;padding:16px 18px 0;font:800 24px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.form{padding:14px 18px 18px;display:grid;gap:12px}
+.f label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2);margin-bottom:4px}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:9px 11px}
+.f textarea{min-height:70px;resize:vertical}
+.f .hint{font-size:12px;color:var(--ink-3);margin-top:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 11px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mfoot{display:flex;gap:8px;justify-content:space-between;align-items:center;padding-top:4px;flex-wrap:wrap}
+.mfoot .r{display:flex;gap:8px;margin-left:auto}
+.err{color:var(--accent);font-size:13px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;z-index:70;box-shadow:var(--shadow)}
+.offline{max-width:520px;margin:60px auto;text-align:center;color:var(--ink-2)}
+.offline h2{font:800 28px var(--f-display);text-transform:uppercase;color:var(--ink);margin:0 0 8px}
+.skel{height:64px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);opacity:.6}
+
+/* phone */
+@media (max-width:760px){
+  .tabs{position:fixed;left:0;right:0;bottom:0;border-radius:0;border:0;border-top:1px solid var(--line);background:var(--surface);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));justify-content:space-around;z-index:30}
+  .tab{flex:1;padding:10px 6px}
+  .top-in{gap:10px}
+  .brand h1{font-size:24px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .cols{grid-template-columns:minmax(0,1fr)}
+  .appt{grid-template-columns:52px minmax(0,1fr);}
+  .appt .right{grid-column:1 / -1;justify-content:flex-start;padding-left:64px}
+  .hist .appt{grid-template-columns:80px minmax(0,1fr)}
+  .hist .appt .right{padding-left:92px}
+  .two{grid-template-columns:1fr}
+  .minis{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:420px){ .actions .btn .lbl{display:none} .brand .date{display:none} }
+@media (prefers-reduced-motion:no-preference){ .sheet{animation:slide .18s ease-out} @keyframes slide{from{transform:translateX(24px);opacity:.6}} }
+
+/* page basics (the artifact viewer used to supply these) */
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh}
+img{max-width:100%}
+[hidden]{display:none!important}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.login-box{width:min(380px,100%);display:grid;gap:14px}
+.login-box h1{margin:0;font:800 44px/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.login-box p{margin:0;color:var(--ink-2)}
+.login-box input{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:11px 12px;font-size:16px}
+.login-box .btn{justify-content:center;padding:11px 14px;font-size:15px}
+#loginMsg{font-size:14px;color:var(--ink-2);min-height:1.4em}
+.top .out{font-size:13px}
+.brand h1{white-space:nowrap}
+@media (max-width:760px){ .top .out.bp{display:none} .top .out{padding:8px 8px} }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="/config.js"></script>
+</head>
+<body>
+<section class="login" id="login" hidden>
+  <form class="login-box" id="loginForm">
+    <div class="pole" aria-hidden="true" style="border-radius:3px"></div>
+    <h1>SMN Cutz</h1>
+    <p>Shop login. Enter your email and tap the link we send you.</p>
+    <label for="loginEmail" class="sr" style="position:absolute;left:-9999px">Email</label>
+    <input id="loginEmail" type="email" autocomplete="email" placeholder="you@gmail.com" required>
+    <button class="btn primary" id="loginBtn" type="submit">Email me a login link</button>
+    <div id="loginMsg" role="status"></div>
+  </form>
+</section>
+<div id="app" hidden>
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><h1 id="shopName">SMN Cutz</h1><span class="date" id="todayLbl"></span></div>
+    <nav class="tabs" aria-label="Views">
+      <button class="tab" data-view="today" aria-current="true">Today</button>
+      <button class="tab" data-view="bookings">Bookings</button>
+      <button class="tab" data-view="clients">Clients</button>
+    </nav>
+    <div class="actions">
+      <a class="btn ghost out bp" href="/" target="_blank" rel="noopener">Booking page</a>
+      <button class="btn ghost out" id="logoutBtn" type="button">Log out</button>
+      <button class="btn" id="addClientBtn" title="New client">+ <span class="lbl">Client</span></button>
+      <button class="btn primary" id="addBookingBtn" title="New booking">+ <span class="lbl">Booking</span></button>
+    </div>
+  </div>
+  <div class="pole" aria-hidden="true"></div>
+</header>
+
+<main id="main">
+  <div class="stats"><div class="stat"><div class="k">Today</div><div class="v">–</div></div><div class="stat"><div class="k">Takings</div><div class="v">–</div></div><div class="stat"><div class="k">Due for a cut</div><div class="v">–</div></div><div class="stat"><div class="k">Cuts this month</div><div class="v">–</div></div></div>
+  <div class="skel"></div>
+</main>
+
+<div id="sheetRoot"></div>
+<div id="modalRoot"></div>
+<div id="lbRoot"></div>
+<div id="toastRoot"></div>
+</div>
+<input type="file" id="fileIn" accept="image/*" multiple hidden>
+
+<script>
+(function(){
+"use strict";
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const addDays = (s,n) => { const d = parse(s); d.setDate(d.getDate()+n); return iso(d); };
+const diff = (a,b) => Math.round((parse(b)-parse(a))/86400000); // b - a in days
+const TODAY = iso(new Date());
+const monday = s => { const d = parse(s); const w = (d.getDay()+6)%7; d.setDate(d.getDate()-w); return iso(d); };
+const fmtDay = s => parse(s).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+const fmtShort = s => parse(s).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+const fmtLong = s => parse(s).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+const fmtTime = t => { if(!t) return "—"; const [h,m] = t.split(":").map(Number); const ap = h>=12?"pm":"am"; return ((h%12)||12)+":"+pad(m)+ap; };
+const money = n => "$"+(Math.round((+n||0)*100)/100).toLocaleString(undefined,{maximumFractionDigits:2});
+const initials = n => (n||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();
+const ago = days => days===0?"today":days===1?"yesterday":days<0?("in "+(-days)+" days"):days<14?(days+" days ago"):days<60?(Math.round(days/7)+" wks ago"):(Math.round(days/30)+" mo ago");
+const cycleText = d => d==null?"—":d<10?("every "+d+" days"):("every ~"+(Math.round(d/7*2)/2)+" wks");
+const MENU = [
+  {id:"cut",   name:"Cut",      price:25, mins:30},
+  {id:"beard", name:"Beard",    price:10, mins:15, alone:15},
+  {id:"brows", name:"Eyebrows", price:5,  mins:10, alone:5},
+];
+const TZ = (()=>{ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; } catch(_){ return "America/New_York"; } })();
+function pickFromText(t){
+  t = String(t||"").toLowerCase(); const s = new Set();
+  if (/\bcut|haircut|scissor|fade|taper|line ?up/.test(t)) s.add("cut");
+  if (/beard|facial/.test(t)) s.add("beard");
+  if (/brow/.test(t)) s.add("brows");
+  if (!s.size) s.add("cut");
+  return s;
+}
+function priceFor(set){ const c = set.has("cut"); return MENU.reduce((s,m)=>set.has(m.id) ? s + (c||m.id==="cut" ? m.price : (m.alone ?? m.price)) : s, 0); }
+function minsFor(set){ return Math.max(15, MENU.reduce((s,m)=>set.has(m.id) ? s+m.mins : s, 0)); }
+function labelFor(set){ const n = MENU.filter(m=>set.has(m.id)).map(m=>m.name); return (!set.has("cut") && n.length===1) ? n[0]+" only" : n.join(" + "); }
+const STATUS = {booked:"Booked",done:"Done",no_show:"No-show",cancelled:"Cancelled"};
+
+/* ---------- state ---------- */
+const S = { clients:new Map(), bookings:new Map(), settings:{}, view:"today", week:monday(TODAY), q:"", sort:"due",
+  open:null, db:null, assets:null, mcp:null, gotC:false, gotB:false, err:null, requests:[], handled:new Set(), req:null };
+try { const v = localStorage.getItem("cb.view"); if (v) S.view = v; const so = localStorage.getItem("cb.sort"); if (so) S.sort = so; } catch(e){}
+
+$("#todayLbl").textContent = fmtLong(TODAY);
+
+/* ---------- derived ---------- */
+function bookingsOf(cid){ return [...S.bookings.values()].filter(b=>b.clientId===cid); }
+function statsFor(c){
+  const all = bookingsOf(c.id).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const done = all.filter(b=>b.status==="done");
+  const dates = [...new Set(done.map(b=>b.date))];
+  let avg = null;
+  if (dates.length>=2){ let t=0; for(let i=1;i<dates.length;i++) t+=diff(dates[i-1],dates[i]); avg = Math.round(t/(dates.length-1)); }
+  const cycle = c.cycleWeeks ? Math.round(c.cycleWeeks*7) : avg;
+  const last = dates.length ? dates[dates.length-1] : null;
+  const next = all.find(b=>b.status==="booked" && b.date>=TODAY) || null;
+  const spent = done.reduce((s,b)=>s+(+b.price||0),0);
+  let dueIn = null;
+  if (last){ const cyc = cycle || 28; dueIn = diff(TODAY, addDays(last,cyc)); }
+  const noShows = all.filter(b=>b.status==="no_show").length;
+  return { all, done, visits:dates.length, avg, cycle, last, next, spent, dueIn, noShows, sinceLast: last?diff(last,TODAY):null };
+}
+function clientName(id, fallback){ const c = S.clients.get(id); return c ? c.name : (fallback || "Walk-in"); }
+function latestPhoto(c){ const p = (c.photos||[]); return p.length ? p[p.length-1] : null; }
+function avatar(c, lg){
+  const p = c && latestPhoto(c);
+  return '<span class="av'+(lg?" lg":"")+'">'+(p?'<img alt="" src="'+esc(photoSrc(p.id))+'">':esc(initials(c&&c.name)))+'</span>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-current", String(t.dataset.view===S.view)));
+  $("#shopName").textContent = S.settings.name || "SMN Cutz";
+  const m = $("#main");
+  if (S.err){ m.innerHTML = '<div class="offline"><h2>Can\'t reach your client book</h2><p>'+esc(S.err)+'</p></div>'; return; }
+  if (!S.gotC || !S.gotB){ return; }
+  let h = "";
+  const ex = [...S.clients.values()].some(c=>c.example) || [...S.bookings.values()].some(b=>b.example);
+  if (ex) h += '<div class="banner"><span>These are example clients and bookings so you can see how it works. Clear them when you\'re ready to add your own.</span><button class="btn small" data-act="clear-ex">Clear examples</button></div>';
+  if (S.view==="today") h += viewToday();
+  else if (S.view==="bookings") h += viewBookings();
+  else h += viewClients();
+  const li = $("#linkIn"), liVal = li ? li.value : null, liFocus = li && document.activeElement===li;
+  m.innerHTML = h;
+  const li2 = $("#linkIn"); if (li2 && liVal!==null){ li2.value = liVal; if (liFocus) li2.focus(); }
+  if (S.open) renderSheet();
+}
+
+function apptRow(b, opts={}){
+  const c = S.clients.get(b.clientId);
+  const past = b.date < TODAY || (b.date===TODAY);
+  let right = '<span class="price">'+(b.price?money(b.price):"")+'</span>';
+  if (b.status==="booked" && past) right += '<button class="btn small" data-act="done" data-id="'+b.id+'">Mark done</button>';
+  if (b.status!=="booked" || !past) right += '<span class="pill '+b.status+'">'+STATUS[b.status]+'</span>';
+  if (b.source==="online"||b.source==="form") right = '<span class="pill online">Online</span>' + right;
+  if (b.status==="booked" && b.date>=TODAY) right += '<a class="btn small ghost" href="'+esc(gcalUrl(b))+'" target="_blank" rel="noopener" title="Add to Google Calendar">+ Calendar</a>';
+  right += '<button class="btn small ghost" data-act="edit-b" data-id="'+b.id+'" aria-label="Edit booking">Edit</button>';
+  const first = opts.dateCol ? '<span class="t" style="font-size:13px">'+esc(fmtShort(b.date))+'<br><span style="color:var(--ink-3)">'+fmtTime(b.time)+'</span></span>' : '<span class="t">'+fmtTime(b.time)+'</span>';
+  return '<div class="appt is-'+b.status+'">'+first+
+    '<div class="who">'+(opts.hideName?'<div>'+esc(b.service||"Cut")+'</div>':'<b data-act="open" data-id="'+esc(b.clientId||"")+'">'+esc(clientName(b.clientId,b.clientName))+'</b>')+
+    '<div class="svc">'+(opts.hideName?esc(b.notes||""):esc([b.service,b.notes].filter(Boolean).join(" · ")))+'</div></div>'+
+    '<div class="right">'+right+'</div></div>';
+}
+
+/* ---------- booking requests (from the public booking page) ---------- */
+function agoTime(ms){ const m = Math.round((Date.now()-ms)/60000); return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"; }
+function pendingRequests(){ return (S.requests||[]).filter(r=>!S.handled.has(r.key)).sort((a,b)=>b.at-a.at); }
+function requestsHtml(){
+  const pend = pendingRequests();
+  let h = '<div class="sec-h"><h2>New requests'+(pend.length?' <span class="count">'+pend.length+'</span>':'')+'</h2><span class="meta">from your booking page</span></div><div class="panel">';
+  if (!pend.length) h += '<div class="empty"><b>No new requests</b>When someone books on your site, they pop up here and you pick the day and time.</div>';
+  else h += pend.map(r=>{ const p = pickFromText(r.wants);
+    return '<div class="req"><div class="info"><b>'+esc(r.name)+'</b><div>'+esc(labelFor(p))+' · '+money(priceFor(p))+(r.phone?' · <span class="mono">'+esc(r.phone)+'</span>':'')+'</div>'+
+      (r.notes?'<div class="rn">“'+esc(r.notes)+'”</div>':'')+(r.at?'<div class="rt">asked '+esc(agoTime(r.at))+'</div>':'')+'</div>'+
+      '<div class="ra"><button class="btn small primary" data-act="sched" data-id="'+r.key+'">Pick a time</button><button class="btn small ghost" data-act="dismiss" data-id="'+r.key+'">Dismiss</button></div></div>'; }).join("");
+  return h + '</div>';
+}
+function bookingCard(){
+  const url = location.origin + "/";
+  return '<div class="sec-h"><h2>Booking page</h2><span class="meta">clients book here</span></div><div class="panel bookcard">'+
+    '<div class="linkrow"><span class="link mono">'+esc(url.replace(/^https?:\/\//,""))+'</span>'+
+    '<button class="btn small" data-act="copy-link" data-v="'+esc(url)+'">Copy</button><a class="btn small ghost" href="'+esc(url)+'" target="_blank" rel="noopener">Open</a></div>'+
+    '<div class="syncline"><span class="dot '+(S.live?"ok":"")+'"></span><span>'+(S.live?"Live: new requests show up here right away.":"Checks for new requests every minute.")+' Put this link in your IG bio.</span></div></div>';
+}
+
+/* ---------- Google Calendar (one tap) ---------- */
+function calTitle(b){ return clientName(b.clientId, b.clientName)+" — "+(b.service||"Cut"); }
+function gcalUrl(b){
+  const stamp = (date,time,add) => { const [y,m,d] = date.split("-").map(Number); const [hh,mm] = (time||"00:00").split(":").map(Number);
+    const dt = new Date(y,m-1,d,hh,mm+(add||0)); return dt.getFullYear()+pad(dt.getMonth()+1)+pad(dt.getDate())+"T"+pad(dt.getHours())+pad(dt.getMinutes())+"00"; };
+  const dates = b.time ? stamp(b.date,b.time)+"/"+stamp(b.date,b.time,b.mins||30) : b.date.replace(/-/g,"")+"/"+addDays(b.date,1).replace(/-/g,"");
+  const c = S.clients.get(b.clientId);
+  const details = [c&&c.phone?"Phone: "+c.phone:"", b.price?"Price: "+money(b.price):"", b.notes||""].filter(Boolean).join("\n");
+  let tz = "America/New_York"; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch(_){}
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(calTitle(b))+"&dates="+dates+"&ctz="+encodeURIComponent(tz)+"&details="+encodeURIComponent(details);
+}
+function removeCal(){}
+
+/* ---------- photos (private storage, signed links) ---------- */
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+S.urls = new Map(); S.live = false; let urlQueue = new Set(), urlTimer = null;
+function photoSrc(path){
+  const hit = S.urls.get(path); if (hit && hit.exp > Date.now()) return hit.url;
+  urlQueue.add(path); clearTimeout(urlTimer); urlTimer = setTimeout(fetchUrls, 30);
+  return BLANK;
+}
+async function fetchUrls(){
+  const paths = [...urlQueue]; urlQueue = new Set(); if (!paths.length || !sb) return;
+  const { data, error } = await sb.storage.from("photos").createSignedUrls(paths, 3600);
+  if (error || !data) return;
+  for (const d of data) if (d.signedUrl) S.urls.set(d.path, {url:d.signedUrl, exp:Date.now()+55*60000});
+  render(); if (S.open) renderSheet();
+  const lb = $("#lbRoot img"); if (lb && lb.dataset.path) lb.src = photoSrc(lb.dataset.path);
+}
+
+function dueList(){
+  return [...S.clients.values()].map(c=>({c,s:statsFor(c)}))
+    .filter(x=>x.s.dueIn!=null && x.s.dueIn<=3 && !x.s.next)
+    .sort((a,b)=>a.s.dueIn-b.s.dueIn);
+}
+
+function viewToday(){
+  const todays = [...S.bookings.values()].filter(b=>b.date===TODAY).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+  const active = todays.filter(b=>b.status!=="cancelled");
+  const doneToday = todays.filter(b=>b.status==="done");
+  const took = doneToday.reduce((s,b)=>s+(+b.price||0),0);
+  const expected = active.filter(b=>b.status!=="no_show").reduce((s,b)=>s+(+b.price||0),0);
+  const month = TODAY.slice(0,7);
+  const monthCuts = [...S.bookings.values()].filter(b=>b.status==="done" && b.date.startsWith(month)).length;
+  const due = dueList();
+  const upcoming = [...S.bookings.values()].filter(b=>b.status==="booked" && b.date>TODAY).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,6);
+
+  let h = '<div class="stats">'+
+    '<div class="stat"><div class="k">Today</div><div class="v">'+active.length+'</div><div class="s">'+doneToday.length+' done</div></div>'+
+    '<div class="stat"><div class="k">Takings</div><div class="v">'+money(took)+'</div><div class="s">of '+money(expected)+' booked</div></div>'+
+    '<div class="stat"><div class="k">Due for a cut</div><div class="v">'+due.length+'</div><div class="s">no booking yet</div></div>'+
+    '<div class="stat"><div class="k">Cuts this month</div><div class="v">'+monthCuts+'</div><div class="s">'+parse(TODAY).toLocaleDateString(undefined,{month:"long"})+'</div></div></div>';
+
+  h += '<div class="cols"><section>' + requestsHtml() + '<div class="sec-h" style="margin-top:22px"><h2>Today\'s chair</h2><span class="meta">'+esc(fmtDay(TODAY))+'</span></div><div class="panel">';
+  h += todays.length ? todays.map(b=>apptRow(b)).join("") : '<div class="empty"><b>Nothing booked today</b>Tap “+ Booking” to add someone to the chair.</div>';
+  h += '</div>';
+  h += '<div class="sec-h" style="margin-top:22px"><h2>Coming up</h2><button class="btn small ghost" data-act="go" data-view="bookings">See the week</button></div><div class="panel">';
+  h += upcoming.length ? upcoming.map(b=>apptRow(b,{dateCol:true})).join("") : '<div class="empty">No upcoming bookings.</div>';
+  h += '</div></section>';
+
+  h += '<section>' + bookingCard() + '<div class="sec-h"><h2>Due for a cut</h2><span class="meta">based on how often they come</span></div><div class="panel">';
+  h += due.length ? due.map(({c,s})=>'<div class="due">'+avatar(c)+'<div class="info"><b data-act="open" data-id="'+c.id+'">'+esc(c.name)+'</b><div>Last cut '+esc(ago(s.sinceLast))+' · '+esc(cycleText(s.cycle||28))+'</div></div>'+
+      '<span class="pill '+(s.dueIn<0?"due":"booked")+'">'+(s.dueIn<0?(-s.dueIn)+'d over':s.dueIn===0?'due today':'in '+s.dueIn+'d')+'</span>'+
+      '<button class="btn small" data-act="book-for" data-id="'+c.id+'">Book</button></div>').join("")
+    : '<div class="empty"><b>Everyone\'s sorted</b>Clients show up here when they\'re close to their usual cut and have nothing booked.</div>';
+  h += '</div></section></div>';
+  return h;
+}
+
+function viewBookings(){
+  const start = S.week, end = addDays(start,6);
+  const title = fmtShort(start)+" – "+fmtShort(end);
+  let h = '<div class="weekbar"><h2>Week of '+esc(title)+'</h2>'+
+    '<button class="btn small" data-act="wk" data-n="-7" aria-label="Previous week">‹ Prev</button>'+
+    '<button class="btn small" data-act="wk" data-n="0">This week</button>'+
+    '<button class="btn small" data-act="wk" data-n="7" aria-label="Next week">Next ›</button></div><div class="days">';
+  for (let i=0;i<7;i++){
+    const d = addDays(start,i);
+    const list = [...S.bookings.values()].filter(b=>b.date===d).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+    const val = list.filter(b=>b.status!=="cancelled"&&b.status!=="no_show").reduce((s,b)=>s+(+b.price||0),0);
+    h += '<div class="day'+(d===TODAY?" today":"")+'"><h3>'+esc(fmtDay(d))+(d===TODAY?" · Today":"")+
+      (list.length?' <span class="c">'+list.length+' booking'+(list.length>1?"s":"")+' · '+money(val)+'</span>':'')+
+      ' <button class="btn small ghost" data-act="book-on" data-date="'+d+'" style="margin-left:auto">+ Add</button></h3>';
+    h += list.length ? '<div class="panel">'+list.map(b=>apptRow(b)).join("")+'</div>' : '<div class="none">Open</div>';
+    h += '</div>';
+  }
+  return h + '</div>';
+}
+
+function viewClients(){
+  let list = [...S.clients.values()].map(c=>({c,s:statsFor(c)}));
+  const q = S.q.trim().toLowerCase();
+  if (q) list = list.filter(({c})=>[c.name,c.phone,c.cut,c.notes].join(" ").toLowerCase().includes(q));
+  const sorts = {
+    due:(a,b)=>(a.s.dueIn??9999)-(b.s.dueIn??9999),
+    name:(a,b)=>a.c.name.localeCompare(b.c.name),
+    visits:(a,b)=>b.s.visits-a.s.visits,
+    recent:(a,b)=>(b.s.last||"").localeCompare(a.s.last||""),
+  };
+  list.sort(sorts[S.sort]||sorts.due);
+  let h = '<div class="toolbar"><input class="search" id="q" type="search" placeholder="Search by name, phone or cut…" value="'+esc(S.q)+'" aria-label="Search clients">'+
+    '<select class="sel" id="sortSel" aria-label="Sort clients">'+
+    [["due","Due soonest"],["name","Name A–Z"],["visits","Most visits"],["recent","Last cut"]].map(([v,l])=>'<option value="'+v+'"'+(S.sort===v?" selected":"")+'>'+l+'</option>').join("")+
+    '</select></div>';
+  if (!S.clients.size) return h + '<div class="panel empty"><b>No clients yet</b>Add your first client with “+ Client”. Their cuts, photos and visit rhythm build up from there.</div>';
+  if (!list.length) return h + '<div class="panel empty">No one matches “'+esc(S.q)+'”.</div>';
+  h += '<div class="grid">';
+  for (const {c,s} of list){
+    let tagDue = "";
+    if (s.next) tagDue = '<span class="pill booked">'+esc(fmtShort(s.next.date))+' '+fmtTime(s.next.time)+'</span>';
+    else if (s.dueIn!=null && s.dueIn<=3) tagDue = '<span class="pill due">'+(s.dueIn<0?"Overdue":"Due soon")+'</span>';
+    h += '<button class="ccard" data-act="open" data-id="'+c.id+'">'+avatar(c)+'<div class="body"><div class="nm">'+esc(c.name)+'</div>'+
+      '<div class="cut">'+esc(c.cut||"No cut notes yet")+'</div><div class="row">'+tagDue+
+      '<span class="tag num">'+s.visits+' visit'+(s.visits===1?"":"s")+'</span>'+
+      (s.cycle?'<span class="tag">'+esc(cycleText(s.cycle))+'</span>':'')+
+      (s.last?'<span class="tag">last '+esc(ago(s.sinceLast))+'</span>':'')+
+      '</div></div></button>';
+  }
+  return h + '</div>';
+}
+
+/* ---------- client sheet ---------- */
+function renderSheet(){
+  const root = $("#sheetRoot");
+  const c = S.clients.get(S.open);
+  if (!c){ root.innerHTML=""; S.open=null; return; }
+  const s = statsFor(c);
+  const keepScroll = root.querySelector(".sheet")?.scrollTop || 0;
+  const photos = (c.photos||[]).slice().reverse();
+  let h = '<div class="scrim" data-act="close-sheet"></div><aside class="sheet" role="dialog" aria-label="'+esc(c.name)+'">'+
+    '<div class="sheet-h"><button class="btn small ghost" data-act="close-sheet">‹ Back</button><div style="display:flex;gap:6px">'+
+    '<button class="btn small" data-act="edit-c" data-id="'+c.id+'">Edit</button><button class="btn small primary" data-act="book-for" data-id="'+c.id+'">Book</button></div></div>'+
+    '<div class="sheet-b">'+
+    '<div class="idcard">'+avatar(c,true)+'<div style="min-width:0"><h2>'+esc(c.name)+'</h2><div class="ph">'+
+      (c.phone?'<span class="mono" style="font-size:14px">'+esc(c.phone)+'</span><button class="btn small ghost" data-act="copy" data-v="'+esc(c.phone)+'">Copy</button>':'<span style="color:var(--ink-3);font-size:14px">No phone saved</span>')+
+      (s.next?'<span class="pill booked">Next: '+esc(fmtShort(s.next.date))+' '+fmtTime(s.next.time)+'</span>':s.dueIn!=null&&s.dueIn<=3?'<span class="pill due">'+(s.dueIn<0?(-s.dueIn)+' days overdue':'Due soon')+'</span>':'')+
+    '</div></div></div>'+
+    '<div class="minis">'+
+      '<div class="mini"><div class="k">Visits</div><div class="v">'+s.visits+'</div><div class="s">'+(s.noShows?s.noShows+' no-show'+(s.noShows>1?"s":""):"&nbsp;")+'</div></div>'+
+      '<div class="mini"><div class="k">Comes</div><div class="v">'+(s.cycle?(s.cycle<10?s.cycle+"d":"~"+(Math.round(s.cycle/7*2)/2)+"w"):"—")+'</div><div class="s">'+(c.cycleWeeks?"set by you":s.avg?"from history":"needs 2 cuts")+'</div></div>'+
+      '<div class="mini"><div class="k">Last cut</div><div class="v">'+(s.last?esc(fmtShort(s.last)):"—")+'</div><div class="s">'+(s.last?esc(ago(s.sinceLast)):"&nbsp;")+'</div></div>'+
+    '</div>'+
+    '<div class="cutcard"><div class="k">Their cut</div><p>'+esc(c.cut||"—")+'</p>'+(c.notes?'<div class="k">Notes</div><p>'+esc(c.notes)+'</p>':'')+
+      '<div class="k">Total spent</div><p class="mono">'+money(s.spent)+'</p></div>'+
+    '<section><div class="sec-h"><h2>Photos</h2><span class="meta">'+photos.length+'</span></div><div class="photos">'+
+      (S.assets?'<label class="upload" for="fileIn"><span>+ Add photo<br><span style="font-size:11px;color:var(--ink-3)">front, side, back</span></span></label>':'')+
+      photos.map(p=>'<button class="photo" data-act="lb" data-id="'+esc(p.id)+'"><img loading="lazy" alt="Cut on '+esc(p.at)+'" src="'+esc(photoSrc(p.id))+'"><span class="d">'+esc(fmtShort(p.at))+'</span></button>').join("")+
+      (!photos.length&&!S.assets?'<div style="grid-column:1/-1;color:var(--ink-3);font-size:13px">No photos yet.</div>':'')+
+    '</div></section>'+
+    '<section class="hist"><div class="sec-h"><h2>History</h2><span class="meta">'+s.all.length+' bookings</span></div><div class="panel">'+
+      (s.all.length ? s.all.slice().reverse().map(b=>apptRow(b,{dateCol:true,hideName:true})).join("") : '<div class="empty">No bookings yet.</div>')+
+    '</div></section>'+
+    '</div></aside>';
+  root.innerHTML = h;
+  root.querySelector(".sheet").scrollTop = keepScroll;
+}
+
+/* ---------- modals ---------- */
+function closeModal(){ $("#modalRoot").innerHTML = ""; }
+function field(id,label,input,hint){ return '<div class="f"><label for="'+id+'">'+label+'</label>'+input+(hint?'<div class="hint">'+hint+'</div>':'')+'</div>'; }
+
+function clientModal(id){
+  const c = id ? S.clients.get(id) : {};
+  $("#modalRoot").innerHTML = '<div class="modal" data-act="modal-bg"><div class="mbox" role="dialog" aria-label="Client"><h2>'+(id?"Edit client":"New client")+'</h2><form class="form" id="cForm">'+
+    field("cName","Name",'<input id="cName" required autocomplete="off" value="'+esc(c.name)+'">')+
+    field("cPhone","Phone",'<input id="cPhone" type="tel" autocomplete="off" value="'+esc(c.phone)+'">')+
+    field("cCut","Their cut",'<textarea id="cCut" placeholder="e.g. Low taper, #2 on sides, scissor top, natural neckline">'+esc(c.cut)+'</textarea>')+
+    field("cCycle","Usual cycle (weeks)",'<input id="cCycle" type="number" min="0.5" step="0.5" inputmode="decimal" value="'+esc(c.cycleWeeks||"")+'">',"Leave blank and it'll be worked out from their visits.")+
+    field("cNotes","Notes",'<textarea id="cNotes" placeholder="Allergies to products, likes a hot towel, talks football…">'+esc(c.notes)+'</textarea>')+
+    '<div class="err" id="cErr" hidden></div>'+
+    '<div class="mfoot">'+(id?'<button type="button" class="btn danger" data-act="del-c" data-id="'+id+'">Delete client</button>':'')+
+    '<div class="r"><button type="button" class="btn" data-act="close-modal">Cancel</button><button class="btn primary" type="submit">Save client</button></div></div>'+
+    '</form></div></div>';
+  $("#cName").focus();
+  $("#cForm").onsubmit = async e => {
+    e.preventDefault();
+    const body = Object.assign({}, c, {
+      name: $("#cName").value.trim(), phone: $("#cPhone").value.trim(), cut: $("#cCut").value.trim(),
+      cycleWeeks: parseFloat($("#cCycle").value) || null, notes: $("#cNotes").value.trim(),
+    });
+    delete body.id;
+    if (!body.name) return;
+    if (!id){ body.createdAt = new Date().toISOString(); body.photos = []; }
+    try {
+      const ref = id ? S.db.collection("clients").doc(id) : S.db.collection("clients").doc();
+      await ref.set(body); closeModal(); toast(id?"Client saved":"Client added");
+      if (!id) { S.open = ref.id; }
+    } catch(err){ showErr("cErr", err); }
+  };
+}
+
+function bookingModal(id, preset={}){
+  const b = id ? S.bookings.get(id) : Object.assign({date:TODAY, time:"", service:"Cut", price:priceFor(new Set(["cut"])), status:"booked"}, preset);
+  const picks = preset.picks ? new Set(preset.picks) : pickFromText(b.service);
+  const clients = [...S.clients.values()].sort((a,z)=>a.name.localeCompare(z.name));
+  const isNew = !id && !!preset.newName;
+  $("#modalRoot").innerHTML = '<div class="modal" data-act="modal-bg"><div class="mbox" role="dialog" aria-label="Booking"><h2>'+(id?"Edit booking":preset.reqKey?"Schedule request":"New booking")+'</h2><form class="form" id="bForm">'+
+    field("bClient","Client",'<select id="bClient" required><option value="">Choose a client…</option>'+clients.map(c=>'<option value="'+c.id+'"'+(c.id===b.clientId?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'<option value="__new"'+(isNew?" selected":"")+'>+ New client…</option></select>')+
+    '<div class="two" id="newNameWrap"'+(isNew?"":" hidden")+'>'+field("bNewName","New client name",'<input id="bNewName" autocomplete="off" value="'+esc(preset.newName||"")+'">')+field("bNewPhone","Phone",'<input id="bNewPhone" type="tel" autocomplete="off" value="'+esc(preset.newPhone||"")+'">')+'</div>'+
+    '<div class="two">'+field("bDate","Date",'<input id="bDate" type="date" required value="'+esc(b.date)+'">')+field("bTime","Time",'<input id="bTime" type="time" step="900" value="'+esc(b.time)+'">')+'</div>'+
+    '<div class="f"><label>Service <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)">· tap to add</span></label><div class="chips" id="svcChips">'+MENU.map(m=>'<button type="button" class="chip" data-id="'+m.id+'" aria-pressed="'+picks.has(m.id)+'">'+esc(m.name)+'</button>').join("")+'</div></div>'+
+    '<div class="two">'+field("bService","Calendar name",'<input id="bService" value="'+esc(id?b.service:labelFor(picks))+'">')+field("bPrice","Price ($)",'<input id="bPrice" type="number" min="0" step="0.5" inputmode="decimal" value="'+esc(id?b.price:priceFor(picks))+'">')+'</div>'+
+    (id?field("bStatus","Status",'<select id="bStatus">'+Object.entries(STATUS).map(([k,v])=>'<option value="'+k+'"'+(b.status===k?" selected":"")+'>'+v+'</option>').join("")+'</select>'):'')+
+    field("bNotes","Notes",'<input id="bNotes" autocomplete="off" placeholder="e.g. wants it shorter this time" value="'+esc(b.notes)+'">')+
+    '<div class="hint" id="calHint" style="font-size:12px;color:var(--ink-3)"></div>'+
+    '<div class="err" id="bErr" hidden></div>'+
+    '<div class="mfoot">'+(id?'<button type="button" class="btn danger" data-act="del-b" data-id="'+id+'">Delete</button>':'')+
+    '<div class="r"><button type="button" class="btn" data-act="close-modal">Cancel</button><button class="btn primary" type="submit">'+(id?"Save":"Book it")+'</button></div></div>'+
+    '</form></div></div>';
+  const sel = $("#bClient");
+  const hint = () => { const nm = sel.value==="__new" ? ($("#bNewName").value.trim()||"Name") : (sel.value ? clientName(sel.value) : "Name");
+    $("#calHint").textContent = "Calendar name: “"+nm+" — "+($("#bService").value.trim()||"Cut")+"”. Tap + Calendar on the booking to add it to Google Calendar."; };
+  sel.onchange = () => { $("#newNameWrap").hidden = sel.value!=="__new"; if(sel.value==="__new") $("#bNewName").focus(); hint(); };
+  $("#bNewName").oninput = hint; $("#bService").oninput = hint;
+  $("#svcChips").onclick = e => { const ch = e.target.closest(".chip"); if(!ch) return;
+    const on = ch.getAttribute("aria-pressed")!=="true"; ch.setAttribute("aria-pressed", String(on));
+    on ? picks.add(ch.dataset.id) : picks.delete(ch.dataset.id);
+    if (!picks.size){ picks.add(ch.dataset.id); ch.setAttribute("aria-pressed","true"); }
+    $("#bService").value = labelFor(picks); $("#bPrice").value = priceFor(picks); hint(); };
+  hint();
+  if (preset.reqKey) $("#bTime").focus(); else if (!b.clientId && !isNew) sel.focus();
+  $("#bForm").onsubmit = async e => {
+    e.preventDefault();
+    const btn = e.submitter || $("#bForm").querySelector("[type=submit]"); btn.disabled = true;
+    try {
+      let cid = sel.value;
+      if (cid==="__new"){
+        const nm = $("#bNewName").value.trim(); if(!nm){ $("#bNewName").focus(); btn.disabled = false; return; }
+        const ref = S.db.collection("clients").doc();
+        await ref.set({name:nm, phone:$("#bNewPhone").value.trim(), cut:"", notes:"", cycleWeeks:null, photos:[], createdAt:new Date().toISOString(), source:preset.reqKey?"form":"manual"});
+        cid = ref.id;
+      }
+      if (!cid){ btn.disabled = false; return; }
+      const body = Object.assign({}, b, {
+        clientId: cid, clientName: clientName(cid, $("#bNewName").value.trim()), date: $("#bDate").value, time: $("#bTime").value,
+        service: $("#bService").value.trim() || labelFor(picks), price: parseFloat($("#bPrice").value)||0, mins: minsFor(picks),
+        notes: $("#bNotes").value.trim(), status: id ? $("#bStatus").value : "booked",
+      });
+      if (preset.reqKey){ body.source = "form"; body.requestKey = preset.reqKey; }
+      delete body.id; delete body.picks; delete body.newName; delete body.newPhone; delete body.reqKey;
+      const ref = id ? S.db.collection("bookings").doc(id) : S.db.collection("bookings").doc();
+      await ref.set(body);
+      if (preset.reqKey) await S.db.collection("requests").doc(preset.reqKey).set({status:"scheduled", bookingId:ref.id, at:new Date().toISOString()});
+      closeModal(); toast((id?"Saved ":"Booked ")+body.clientName+" · "+fmtShort(body.date)+(body.time?" "+fmtTime(body.time):""));
+      const changed = !id || ["clientId","clientName","date","time","service","mins","status"].some(k=>b[k]!==body[k]) || b.calError || !b.calEventId;
+    } catch(err){ btn.disabled = false; showErr("bErr", err); }
+  };
+}
+
+function showErr(elId, err){
+  const el = $("#"+elId); el.hidden = false;
+  el.textContent = err && err.code==="quota_exceeded" ? "Storage is full. Delete some old bookings and try again." :
+    err && err.code==="invalid_argument" ? "You don't have permission to change this client book." : "Couldn't save. Check your connection and try again.";
+}
+
+/* ---------- lightbox ---------- */
+function lightbox(pid){
+  const c = S.clients.get(S.open); if(!c) return;
+  const p = (c.photos||[]).find(x=>x.id===pid); if(!p) return;
+  $("#lbRoot").innerHTML = '<div class="lb" data-act="lb-close"><img alt="" data-path="'+esc(pid)+'" src="'+esc(photoSrc(pid))+'"><div class="bar"><span>'+esc(c.name)+' · '+esc(fmtLong(p.at))+'</span>'+
+    (S.assets?'<button class="btn small" data-act="del-photo" data-id="'+esc(pid)+'">Delete photo</button>':'')+
+    '<button class="btn small" data-act="lb-close">Close</button></div></div>';
+}
+
+/* ---------- photos ---------- */
+function shrink(file){
+  return new Promise(res => {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return res(file);
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => {
+      const max = 1600, sc = Math.min(1, max/Math.max(img.width,img.height));
+      if (sc===1 && file.size < 1.5e6){ URL.revokeObjectURL(url); return res(file); }
+      const cv = document.createElement("canvas"); cv.width = Math.round(img.width*sc); cv.height = Math.round(img.height*sc);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height); URL.revokeObjectURL(url);
+      cv.toBlob(b=>res(b||file),"image/jpeg",.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(file); };
+    img.src = url;
+  });
+}
+$("#fileIn").addEventListener("change", async e => {
+  const files = [...e.target.files]; e.target.value = "";
+  const cid = S.open; if (!files.length || !cid || !S.assets) return;
+  toast("Uploading "+files.length+" photo"+(files.length>1?"s":"")+"…", 60000);
+  const added = [];
+  for (const f of files){
+    try { const blob = await shrink(f); const r = await S.assets.upload(blob, blob.type?undefined:{type:"image/jpeg"}); added.push({id:r.id, at:TODAY}); }
+    catch(err){ toast(err&&err.code==="too_large"?"That photo is too big (20 MB max).":err&&err.code==="unsupported_type"?"Use a JPG, PNG, WEBP or GIF photo.":"A photo didn't upload. Try again."); }
+  }
+  if (added.length){
+    const c = S.clients.get(cid);
+    try { await S.db.collection("clients").doc(cid).update({photos:[...(c.photos||[]), ...added]}); toast(added.length+" photo"+(added.length>1?"s":"")+" added"); }
+    catch(err){ toast("Photo saved but couldn't attach it. Try again."); }
+  }
+});
+
+/* ---------- actions ---------- */
+let armed = null;
+function arm(btn, label){
+  if (armed === btn) return true;
+  if (armed) { armed.classList.remove("armed"); armed.textContent = armed.dataset.orig; }
+  armed = btn; btn.dataset.orig = btn.textContent; btn.textContent = label; btn.classList.add("armed");
+  setTimeout(()=>{ if(armed===btn){ btn.classList.remove("armed"); btn.textContent = btn.dataset.orig; armed=null; } }, 4000);
+  return false;
+}
+
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-act],[data-view]"); if (!t) return;
+  const act = t.dataset.act, id = t.dataset.id;
+  if (!act && t.classList.contains("tab")) { S.view = t.dataset.view; try{localStorage.setItem("cb.view",S.view)}catch(_){} render(); window.scrollTo(0,0); return; }
+  switch(act){
+    case "go": S.view = t.dataset.view; render(); window.scrollTo(0,0); break;
+    case "open": if (id && S.clients.has(id)){ S.open = id; renderSheet(); } break;
+    case "close-sheet": S.open = null; $("#sheetRoot").innerHTML = ""; break;
+    case "edit-c": clientModal(id); break;
+    case "edit-b": bookingModal(id); break;
+    case "book-for": bookingModal(null,{clientId:id}); break;
+    case "book-on": bookingModal(null,{date:t.dataset.date}); break;
+    case "close-modal": closeModal(); break;
+    case "modal-bg": if (e.target===t) closeModal(); break;
+    case "wk": { const n = +t.dataset.n; S.week = n===0 ? monday(TODAY) : addDays(S.week,n); render(); break; }
+    case "done": try { await S.db.collection("bookings").doc(id).update({status:"done"}); toast("Marked done"); } catch(err){ toast("Couldn't update. Try again."); } break;
+    case "copy": try { await navigator.clipboard.writeText(t.dataset.v); toast("Number copied"); } catch(_){ toast(t.dataset.v); } break;
+    case "lb": lightbox(id); break;
+    case "lb-close": if (e.target===t || t.tagName==="BUTTON") $("#lbRoot").innerHTML=""; break;
+    case "del-photo": {
+      if (!arm(t,"Tap again to delete")) return;
+      const c = S.clients.get(S.open); if(!c) return;
+      try { await S.db.collection("clients").doc(c.id).update({photos:(c.photos||[]).filter(p=>p.id!==id)}); await S.assets.delete(id).catch(()=>{}); $("#lbRoot").innerHTML=""; toast("Photo deleted"); }
+      catch(err){ toast("Couldn't delete the photo."); }
+      break;
+    }
+    case "del-b": {
+      if (!arm(t,"Tap again to delete")) return;
+      try { const bk = S.bookings.get(id); await S.db.collection("bookings").doc(id).delete(); closeModal(); toast("Booking deleted"); removeCal(bk); } catch(err){ showErr("bErr",err); }
+      break;
+    }
+    case "del-c": {
+      if (!arm(t,"Tap again — deletes their bookings too")) return;
+      try {
+        const c = S.clients.get(id);
+        for (const b of bookingsOf(id)){ await S.db.collection("bookings").doc(b.id).delete(); removeCal(b); }
+        await S.db.collection("clients").doc(id).delete();
+        if (S.assets) for (const p of (c.photos||[])) await S.assets.delete(p.id).catch(()=>{});
+        closeModal(); S.open = null; $("#sheetRoot").innerHTML = ""; toast("Client deleted");
+      } catch(err){ showErr("cErr",err); }
+      break;
+    }
+    case "sched": {
+      const r = (S.requests||[]).find(x=>x.key===id); if (!r) return;
+      const digits = v => String(v||"").replace(/\D/g,"").slice(-10);
+      const m = [...S.clients.values()].find(c=>r.phone && digits(c.phone) && digits(c.phone)===digits(r.phone)) ||
+                [...S.clients.values()].find(c=>c.name.trim().toLowerCase()===r.name.trim().toLowerCase());
+      bookingModal(null, {clientId:m?m.id:undefined, newName:m?undefined:r.name, newPhone:m?undefined:r.phone, picks:[...pickFromText(r.wants)], notes:r.notes, reqKey:r.key});
+      break;
+    }
+    case "dismiss": {
+      if (!arm(t,"Tap again")) return;
+      try { await S.db.collection("requests").doc(id).set({status:"dismissed", at:new Date().toISOString()}); toast("Request dismissed"); } catch(err){ toast("Couldn't dismiss. Try again."); }
+      break;
+    }
+    case "edit-link": S.editLink = true; render(); { const i = $("#linkIn"); if (i) i.focus(); } break;
+    case "cancel-link": S.editLink = false; render(); break;
+    case "save-link": {
+      const v = ($("#linkIn").value||"").trim();
+      if (v && !/^https:\/\//i.test(v)){ toast("Paste the full link, starting with https://"); return; }
+      try { await S.db.doc("settings/shop").set(Object.assign({}, S.settings, {bookingUrl:v})); S.editLink = false; toast(v?"Booking link saved":"Booking link removed"); }
+      catch(err){ toast("Couldn't save the link. Try again."); }
+      break;
+    }
+    case "copy-link": try { await navigator.clipboard.writeText(t.dataset.v); toast("Link copied. Put it in your IG bio."); } catch(_){ toast(t.dataset.v, 6000); } break;
+    case "clear-ex": {
+      if (!arm(t,"Tap again to clear")) return;
+      try {
+        for (const b of [...S.bookings.values()].filter(b=>b.example)) await S.db.collection("bookings").doc(b.id).delete();
+        for (const c of [...S.clients.values()].filter(c=>c.example)) await S.db.collection("clients").doc(c.id).delete();
+        toast("Examples cleared");
+      } catch(err){ toast("Couldn't clear examples. Try again."); }
+      break;
+    }
+  }
+});
+document.addEventListener("input", e => {
+  if (e.target.id==="q"){ S.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos,pos); }
+});
+document.addEventListener("change", e => {
+  if (e.target.id==="sortSel"){ S.sort = e.target.value; try{localStorage.setItem("cb.sort",S.sort)}catch(_){} render(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key!=="Escape") return;
+  if ($("#lbRoot").innerHTML) $("#lbRoot").innerHTML="";
+  else if ($("#modalRoot").innerHTML) closeModal();
+  else if (S.open){ S.open=null; $("#sheetRoot").innerHTML=""; }
+});
+$("#addClientBtn").onclick = () => S.db ? clientModal(null) : toast("Your client book is still loading");
+$("#addBookingBtn").onclick = () => S.db ? bookingModal(null) : toast("Your client book is still loading");
+
+let toastTimer;
+function toast(msg, ms=2600){
+  $("#toastRoot").innerHTML = '<div class="toast" role="status">'+esc(msg)+'</div>';
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ $("#toastRoot").innerHTML=""; }, ms);
+}
+
+/* ---------- Supabase ---------- */
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
+const sb = window.supabase.createClient(SMN.url, SMN.key, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+const TABLES = {
+  clients:  {name:"name", phone:"phone", email:"email", cut:"cut", notes:"notes", cycleWeeks:"cycle_weeks", photos:"photos", source:"source", createdAt:"created_at"},
+  bookings: {clientId:"client_id", clientName:"client_name", date:"date", time:"time", service:"service", price:"price", mins:"mins", status:"status", notes:"notes", source:"source", requestKey:"request_id"},
+  requests: {status:"status", bookingId:"booking_id"},
+};
+function toRow(table, obj){ const map = TABLES[table], row = {}; for (const k in obj) if (map[k] && obj[k]!==undefined) row[map[k]] = obj[k]; if (row.date==="") delete row.date; return row; }
+function fromRow(table, row){ const map = TABLES[table], o = {id:row.id}; for (const k in map) if (row[map[k]]!==undefined) o[k] = row[map[k]]; if (o.cycleWeeks!=null) o.cycleWeeks = +o.cycleWeeks; if (o.price!=null) o.price = +o.price; if (o.time==null) o.time=""; return o; }
+function fail(error){ if (error) throw {code: error.code==="23505"?"conflict":"invalid_argument", message:error.message}; }
+// Small adapter so the app code reads the same as before: collection("x").doc(id).set/update/delete
+S.db = {
+  collection(table){ return { doc(id){ id = id || uuid(); return {
+    id,
+    async set(obj){
+      if (table==="requests") return this.update(obj);
+      const row = Object.assign(toRow(table,obj), {id});
+      const { error } = await sb.from(table).upsert(row); fail(error); applyLocal(table, id, obj, true);
+    },
+    async update(obj){ const { error } = await sb.from(table).update(toRow(table,obj)).eq("id",id); fail(error); applyLocal(table, id, obj, false); },
+    async delete(){ const { error } = await sb.from(table).delete().eq("id",id); fail(error); applyLocal(table, id, null); },
+  }; } }; },
+  doc(){ return { async set(){} }; },
+};
+function applyLocal(table, id, obj, replace){
+  if (table==="requests"){ if (obj && obj.status && obj.status!=="new") S.handled.add(id); render(); return; }
+  const m = table==="clients" ? S.clients : S.bookings;
+  if (obj===null) m.delete(id); else m.set(id, Object.assign({id}, replace ? {} : (m.get(id)||{}), obj));
+  render(); if (S.open) renderSheet();
+}
+S.assets = {
+  async upload(blob){
+    const ext = (blob.type||"image/jpeg").split("/")[1].replace("jpeg","jpg");
+    const path = (S.open||"misc")+"/"+uuid()+"."+ext;
+    const { error } = await sb.storage.from("photos").upload(path, blob, {contentType:blob.type||"image/jpeg", upsert:false});
+    if (error) throw {code: /size|large/i.test(error.message)?"too_large":"upstream_error"};
+    return {id:path};
+  },
+  async delete(path){ await sb.storage.from("photos").remove([path]); },
+};
+
+async function loadAll(){
+  const [c, b, r] = await Promise.all([
+    sb.from("clients").select("*"),
+    sb.from("bookings").select("*"),
+    sb.from("requests").select("*").order("created_at",{ascending:false}).limit(500),
+  ]);
+  if (c.error || b.error || r.error){ if (!S.gotC) { S.err = "Couldn't load your client book. Check your connection and reload."; render(); } return; }
+  S.clients = new Map(c.data.map(x=>[x.id, fromRow("clients",x)]));
+  S.bookings = new Map(b.data.map(x=>[x.id, fromRow("bookings",x)]));
+  const before = S.gotC ? new Set(pendingRequests().map(x=>x.key)) : null;
+  S.requests = r.data.map(x=>({ key:x.id, name:x.name, phone:x.phone, wants:(x.services||[]).join(", "), notes:x.notes||"", at:Date.parse(x.created_at)||0 }));
+  S.handled = new Set(r.data.filter(x=>x.status!=="new").map(x=>x.id));
+  S.gotC = S.gotB = true;
+  if (before){ const fresh = pendingRequests().filter(x=>!before.has(x.key)); if (fresh.length) toast(fresh.length===1 ? "New booking request from "+fresh[0].name : fresh.length+" new booking requests", 5000); }
+  render(); if (S.open) renderSheet();
+}
+let reloadTimer = null;
+function queueReload(){ clearTimeout(reloadTimer); reloadTimer = setTimeout(loadAll, 400); }
+
+/* ---------- login ---------- */
+function showLogin(msg){
+  $("#app").hidden = true; $("#login").hidden = false;
+  $("#loginMsg").textContent = msg || "";
+}
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#loginEmail").value.trim(); if (!email) return;
+  const btn = $("#loginBtn"); btn.disabled = true; btn.textContent = "Sending…";
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin + "/admin" } });
+  btn.disabled = false; btn.textContent = "Email me a login link";
+  $("#loginMsg").textContent = error ? (/rate|seconds/i.test(error.message) ? "Wait a minute before asking for another link." : "Couldn't send the link: "+error.message) : "Check your email for the login link, then tap it on this device.";
+});
+$("#logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+
+let started = false;
+async function start(session){
+  if (!session){ showLogin(); return; }
+  if (started) return; started = true;
+  const { data:isOwner } = await sb.rpc("is_owner");
+  if (!isOwner){ started = false; await sb.auth.signOut(); showLogin("That email isn't the SMN Cutz owner account."); return; }
+  $("#login").hidden = true; $("#app").hidden = false;
+  await loadAll();
+  sb.channel("smn-live")
+    .on("postgres_changes", {event:"*", schema:"public", table:"requests"}, queueReload)
+    .on("postgres_changes", {event:"*", schema:"public", table:"bookings"}, queueReload)
+    .on("postgres_changes", {event:"*", schema:"public", table:"clients"}, queueReload)
+    .subscribe(status => { S.live = status==="SUBSCRIBED"; render(); });
+  setInterval(loadAll, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) loadAll(); });
+}
+sb.auth.onAuthStateChange((_evt, session) => { if (session) start(session); });
+sb.auth.getSession().then(({data}) => start(data.session));
+})();
+</script>
+</body>
+</html>
