@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SMN Cutz · Jersey Barber</title>
+<link rel="icon" type="image/jpeg" href="/img/icon.jpg">
+<meta property="og:image" content="/img/hero.jpg">
 <meta name="description" content="SMN Cutz, a Jersey barber. See the work, pick what you want, and I'll DM you a time.">
 <meta property="og:title" content="SMN Cutz · Jersey Barber">
 <meta property="og:description" content="See the work, pick what you want, and I'll DM you a time.">
@@ -36,18 +38,51 @@ button,input,textarea{font:inherit;color:inherit}
 [hidden]{display:none!important}
 img{max-width:100%}
 .pole{height:6px;background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,var(--surface) 10px 16px,var(--navy) 16px 26px,var(--surface) 26px 32px)}
-.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:28px 48px;display:grid;gap:22px}
-.hero h1{margin:0;font:800 clamp(56px,16vw,92px)/.9 var(--f-display);text-transform:uppercase;letter-spacing:.01em}
-.hero .kicker{font:800 18px/1 var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin-bottom:8px}
-.hero p{margin:10px 0 0;color:var(--ink-2);font-size:17px;max-width:40ch}
-.hero .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:40px 48px;display:grid;gap:56px}
+section[id]{scroll-margin-top:84px}
+/* top bar */
+.nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand a.logo{font:800 26px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;color:var(--ink);text-decoration:none;white-space:nowrap}
+.admin-link{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);border:1.5px solid var(--accent);border-radius:999px;padding:4px 10px;text-decoration:none}
+.admin-link:hover{background:var(--accent);color:var(--accent-ink)}
+.links{display:flex;gap:2px;align-items:center}
+.links a{color:var(--ink);text-decoration:none;font-weight:600;font-size:15px;padding:7px 11px;border-radius:8px;white-space:nowrap}
+.links a:hover{background:var(--surface-2)}
+.links a.bk{background:var(--accent);color:var(--accent-ink)}
+@media (max-width:560px){ .links{width:100%;justify-content:space-between} .links a{font-size:14px;padding:7px 8px} }
+/* hero */
+.hero{color:#fff;background:linear-gradient(180deg,rgba(8,10,14,.55),rgba(8,10,14,.78)),url("/img/hero.jpg") center 30%/cover no-repeat;padding:clamp(72px,14vw,140px) 16px clamp(56px,10vw,110px)}
+.hero-in{max-width:980px;margin:0 auto}
+.hero h1{margin:0;font:800 clamp(64px,17vw,136px)/.88 var(--f-display);text-transform:uppercase;letter-spacing:.01em}
+.hero .kicker{font:800 18px/1 var(--f-display);text-transform:uppercase;letter-spacing:.16em;color:#ff8a9b;margin-bottom:10px}
+.hero p{margin:14px 0 0;color:rgba(255,255,255,.85);font-size:18px;max-width:42ch}
+.hero .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;align-items:center}
+.ghost-btn{display:inline-flex;align-items:center;color:#fff;text-decoration:none;font:800 20px/1 var(--f-display);text-transform:uppercase;letter-spacing:.05em;padding:12px 18px;border-radius:10px;border:1.5px solid rgba(255,255,255,.6)}
+.ghost-btn:hover{background:rgba(255,255,255,.12)}
+.book-col{max-width:560px;width:100%;margin:0 auto;display:grid;gap:14px}
+/* about */
+.about{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:center;margin-top:14px}
+.about img{width:100%;border-radius:14px;display:block;aspect-ratio:4/3;object-fit:cover}
+.about h3{margin:0 0 10px;font:800 32px/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.about p{margin:0 0 12px;color:var(--ink-2);max-width:56ch}
+.stats{display:flex;gap:28px;margin-top:16px}
+.stats b{display:block;font:800 40px/1 var(--f-display)}
+.stats span{color:var(--ink-2);font-size:14px}
+.reviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:28px}
+.review{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:10px;align-content:start}
+.review .stars{color:#E2A400;letter-spacing:2px;font-size:15px}
+.review p{margin:0;color:var(--ink)}
+.review cite{font-style:normal;font-weight:600;color:var(--ink-2);font-size:14px}
+@media (max-width:760px){ .about{grid-template-columns:1fr} }
 .cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font:800 20px/1 var(--f-display);text-transform:uppercase;letter-spacing:.05em;padding:13px 20px;border-radius:10px}
 .tag{font-size:13px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);text-decoration:none}
 a.tag:hover{border-color:var(--ink-3)}
 .sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.sec-h h2{margin:0;font:800 28px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.sec-h h2{margin:0;font:800 clamp(34px,7vw,48px)/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
 .sec-h a{font-size:14px;color:var(--ink-2)}
-.pf{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.pf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:14px}
 .pf button{padding:0;border:0;background:var(--surface-2);border-radius:8px;overflow:hidden;aspect-ratio:4/5;cursor:zoom-in;max-width:100%}
 .pf img{width:100%;height:100%;object-fit:cover;display:block}
 .pf-empty{margin-top:12px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--ink-2)}
@@ -100,23 +135,36 @@ footer a{color:inherit}
 <script src="/config.js"></script>
 </head>
 <body>
+<header class="nav">
+  <div class="nav-in">
+    <div class="brand"><a class="logo" href="#top">SMN Cutz</a><a class="admin-link" id="adminLink" href="/admin" hidden>Admin</a></div>
+    <nav class="links" aria-label="Sections">
+      <a href="#work">Gallery</a>
+      <a href="#book" class="bk">Book</a>
+      <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">Instagram</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+</header>
 <div class="pole" aria-hidden="true"></div>
-<main class="wrap">
-  <header class="hero">
+<section class="hero" id="top">
+  <div class="hero-in">
     <div class="kicker">Jersey barber</div>
     <h1>SMN Cutz</h1>
-    <p>Clean men's cuts in Jersey. Check the work, pick what you want, and I'll DM you a time.</p>
-    <div class="row"><a class="cta" href="#book">Book a cut</a><a class="tag" href="https://instagram.com/smncutz" target="_blank" rel="noopener">@smncutz</a></div>
-  </header>
-
+    <p>Clean men's cuts in Jersey. Tapers, fades and everything in between. Check the work, pick what you want, and I'll DM you a time.</p>
+    <div class="row"><a class="cta" href="#book">Book a cut</a><a class="ghost-btn" href="https://instagram.com/smncutz" target="_blank" rel="noopener">@smncutz</a></div>
+  </div>
+</section>
+<main class="wrap">
   <section id="work" aria-labelledby="pfH">
-    <div class="sec-h"><h2 id="pfH">The work</h2><a href="https://instagram.com/smncutz" target="_blank" rel="noopener">More on IG</a></div>
-    <div class="pf" id="pf"></div>
-    <div class="pf-empty" id="pfEmpty" hidden>New cuts going up soon. Peep <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">@smncutz</a> in the meantime.</div>
+    <div class="sec-h"><h2 id="pfH">The work</h2><a href="https://instagram.com/smncutz" target="_blank" rel="noopener">More on Instagram</a></div>
+    <div class="pf" id="pf"><button type="button" data-src="/img/work1.jpg" aria-label="View cut"><img loading="lazy" alt="Cut by SMN Cutz" src="/img/work1.jpg"></button><button type="button" data-src="/img/work2.jpg" aria-label="View cut"><img loading="lazy" alt="Cut by SMN Cutz" src="/img/work2.jpg"></button><button type="button" data-src="/img/work3.jpg" aria-label="View cut"><img loading="lazy" alt="Cut by SMN Cutz" src="/img/work3.jpg"></button><button type="button" data-src="/img/work4.jpg" aria-label="View cut"><img loading="lazy" alt="Cut by SMN Cutz" src="/img/work4.jpg"></button><button type="button" data-src="/img/work5.jpg" aria-label="View cut"><img loading="lazy" alt="Cut by SMN Cutz" src="/img/work5.jpg"></button><button type="button" data-src="/img/work6.jpg" aria-label="View cut"><img loading="lazy" alt="Cut by SMN Cutz" src="/img/work6.jpg"></button></div>
   </section>
 
+  <section id="book" class="book-col" aria-labelledby="bookH">
+  <div class="sec-h"><h2 id="bookH">Book a cut</h2></div>
   <form id="bookForm" style="display:grid;gap:22px" novalidate>
-    <section class="card" id="book" aria-labelledby="h1">
+    <section class="card" aria-labelledby="h1">
       <h2 id="h1"><span class="n">1</span>What do you want?</h2>
       <div class="tiles" id="tiles">
         <button type="button" class="tile" data-id="Haircut" aria-pressed="true"><span class="box"></span><span class="txt"><b>Men's haircut</b><span>Fade, taper or scissor cut, lined up clean</span></span><span class="pr">$25</span></button>
@@ -169,6 +217,25 @@ footer a{color:inherit}
     <p id="doneMsg"></p>
     <button type="button" class="tag" id="again" style="justify-self:center;cursor:pointer;margin-top:10px">Book for someone else</button>
   </section>
+  </section>
+
+  <section id="about" aria-labelledby="aboutH">
+    <div class="sec-h"><h2 id="aboutH">About</h2></div>
+    <div class="about">
+      <img src="/img/about.jpg" alt="SMN cutting a client's hair under a ring light">
+      <div>
+        <h3>Crafting it right since day one</h3>
+        <p>With over a year behind the chair, I've been sharpening my craft and building a loyal client base. Every cut gets the same focus, start to finish.</p>
+        <p>I specialize in tapers, fades and everything in between, with precision and attention to detail on every appointment. Based in Jersey.</p>
+        <div class="stats"><div><b>100+</b><span>Happy clients</span></div><div><b>1+</b><span>Year behind the chair</span></div></div>
+      </div>
+    </div>
+    <div class="reviews">
+      <figure class="review" style="margin:0"><div class="stars" aria-label="5 stars">★★★★★</div><p>“My cut always turns out mad fire 🔥🔥 Been loyal to him since my first cut.”</p><cite>Arib O.</cite></figure>
+      <figure class="review" style="margin:0"><div class="stars" aria-label="5 stars">★★★★★</div><p>“Best barber in the area no doubt. Always hella consistent w the quality and great attention to detail and he got me right for prom.”</p><cite>Naveed A.</cite></figure>
+      <figure class="review" style="margin:0"><div class="stars" aria-label="5 stars">★★★★★</div><p>“Best experience I've had at a barber. My burst fade came out clean. Also had great convos while getting my hair cut. 10/10”</p><cite>Mohammed H.</cite></figure>
+    </div>
+  </section>
 
   <footer>SMN Cutz · Jersey · <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">Instagram</a></footer>
 </main>
@@ -217,18 +284,19 @@ $("#ig").addEventListener("input", e => { const v = e.target.value; if (v.starts
 let sb = null;
 try { sb = window.supabase.createClient(window.SMN.url, window.SMN.key, { auth:{ persistSession:false } }); } catch(_){}
 
-/* portfolio */
+/* gallery: built-in photos + anything added in the admin Portfolio tab */
+document.querySelectorAll("#pf button").forEach(b => b.addEventListener("click", () => openLb(b.dataset.src)));
 async function loadPortfolio(){
-  if (!sb){ $("#pfEmpty").hidden = false; return; }
+  if (!sb) return;
   const { data, error } = await sb.storage.from("portfolio").list("", { limit:30, sortBy:{ column:"created_at", order:"desc" } });
   const files = (data||[]).filter(f => f.name && !f.name.startsWith(".") && f.id);
-  if (error || !files.length){ $("#pfEmpty").hidden = false; return; }
-  const pf = $("#pf");
+  if (error || !files.length) return;
+  const pf = $("#pf"), first = pf.firstChild;
   files.forEach(f => {
     const url = sb.storage.from("portfolio").getPublicUrl(f.name).data.publicUrl;
     const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label","View cut");
     const img = document.createElement("img"); img.loading = "lazy"; img.alt = "Cut by SMN Cutz"; img.src = url;
-    b.appendChild(img); b.addEventListener("click", () => openLb(url)); pf.appendChild(b);
+    b.appendChild(img); b.addEventListener("click", () => openLb(url)); pf.insertBefore(b, first);
   });
 }
 function openLb(url){
@@ -239,6 +307,7 @@ function openLb(url){
 }
 document.addEventListener("keydown", e => { if (e.key==="Escape") $("#lb").innerHTML = ""; });
 loadPortfolio();
+try { if (Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k))) $("#adminLink").hidden = false; } catch(_){}
 
 /* booking */
 function showErr(msg){ const el = $("#err"); el.textContent = msg; el.hidden = !msg; }
@@ -263,16 +332,16 @@ $("#bookForm").addEventListener("submit", async e => {
   });
   btn.disabled = false; btn.textContent = "Send booking request";
   if (error) return showErr("That didn't go through. Try again, or DM @smncutz on Instagram.");
-  $("#bookForm").hidden = true; $("#work").hidden = true; $("#done").hidden = false;
+  $("#bookForm").hidden = true; $("#done").hidden = false;
   $("#doneTitle").textContent = "Got it, "+name.split(/\s+/)[0]+"!";
   $("#doneMsg").textContent = "I'll DM you at @"+ig+" to lock in a time.";
-  window.scrollTo({top:0});
+  $("#book").scrollIntoView();
 });
 $("#again").addEventListener("click", () => {
   $("#bookForm").reset(); picks.clear(); picks.add("Haircut");
   document.querySelectorAll(".tile").forEach(t=>t.setAttribute("aria-pressed", String(t.dataset.id==="Haircut")));
   document.querySelectorAll("#when .chip, #heard .chip").forEach(c=>{ c.setAttribute("aria-pressed","false"); if (c.hasAttribute("aria-checked")) c.setAttribute("aria-checked","false"); });
-  update(); $("#done").hidden = true; $("#bookForm").hidden = false; $("#work").hidden = false;
+  update(); $("#done").hidden = true; $("#bookForm").hidden = false;
 });
 })();
 </script>
