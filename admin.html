@@ -167,7 +167,11 @@ a.btn{text-decoration:none;color:inherit}
 .search{flex:1;min-width:200px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px}
 .sel{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-.ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;gap:12px;text-align:left;align-items:flex-start;width:100%}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column}
+.ccard-main{background:none;border:0;padding:14px 14px 10px;display:flex;gap:12px;text-align:left;align-items:flex-start;width:100%;cursor:pointer;border-radius:var(--r) var(--r) 0 0}
+.ccard .igh{font-weight:500;font-size:13px;color:var(--ink-3)}
+.cacts{display:flex;gap:6px;padding:0 14px 12px;flex-wrap:wrap}
+.cacts .btn.no{margin-left:auto}
 .ccard:hover{border-color:var(--ink-3)}
 .ccard .body{min-width:0;flex:1}
 .ccard .nm{font-weight:600;font-size:15px}
@@ -616,12 +620,16 @@ function viewClients(){
     let tagDue = "";
     if (s.next) tagDue = '<span class="pill booked">'+esc(fmtShort(s.next.date))+' '+fmtTime(s.next.time)+'</span>';
     else if (s.dueIn!=null && s.dueIn<=3) tagDue = '<span class="pill due">'+(s.dueIn<0?"Overdue":"Due soon")+'</span>';
-    h += '<button class="ccard" data-act="open" data-id="'+c.id+'">'+avatar(c)+'<div class="body"><div class="nm">'+esc(c.name)+'</div>'+
+    h += '<div class="ccard"><button class="ccard-main" data-act="open" data-id="'+c.id+'">'+avatar(c)+'<div class="body"><div class="nm">'+esc(c.name)+(c.instagram?' <span class="igh">@'+esc(c.instagram)+'</span>':'')+'</div>'+
       '<div class="cut">'+esc(c.cut||"No cut notes yet")+'</div><div class="row">'+tagDue+
       '<span class="tag num">'+s.visits+' visit'+(s.visits===1?"":"s")+'</span>'+
       (s.cycle?'<span class="tag">'+esc(cycleText(s.cycle))+'</span>':'')+
       (s.last?'<span class="tag">last '+esc(ago(s.sinceLast))+'</span>':'')+
-      '</div></div></button>';
+      '</div></div></button>'+
+      '<div class="cacts"><button class="btn small primary" data-act="book-for" data-id="'+c.id+'">Book</button>'+
+      (c.instagram?'<a class="btn small" href="https://ig.me/m/'+encodeURIComponent(c.instagram)+'" target="_blank" rel="noopener">DM</a>':'')+
+      '<button class="btn small" data-act="edit-c" data-id="'+c.id+'">Edit</button>'+
+      '<button class="btn small no" data-act="del-c" data-id="'+c.id+'">Delete</button></div></div>';
   }
   return h + '</div>';
 }
@@ -887,7 +895,7 @@ document.addEventListener("click", async e => {
         await S.db.collection("clients").doc(id).delete();
         if (S.assets) for (const p of (c.photos||[])) await S.assets.delete(p.id).catch(()=>{});
         closeModal(); S.open = null; $("#sheetRoot").innerHTML = ""; toast("Client deleted");
-      } catch(err){ showErr("cErr",err); }
+      } catch(err){ if ($("#cErr")) showErr("cErr",err); else toast("Couldn't delete. Try again."); }
       break;
     }
     case "sched": {
