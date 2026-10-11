@@ -1227,7 +1227,7 @@ $("#linkBtn").addEventListener("click", async () => {
   btn.disabled = false;
   $("#loginMsg").textContent = error ? (/rate/i.test(error.message) ? "Too many login emails for now. Try again in an hour, or use your password." : "Couldn't send the link: "+error.message) : "Check your email for the login link, then tap it on this device.";
 });
-$("#logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+$("#logoutBtn").addEventListener("click", async () => { try { await sb.auth.signOut(); } catch(_){} location.href = "/"; });
 
 let started = false;
 async function start(session){
