@@ -15,7 +15,7 @@
   --ink:#15181E; --ink-2:#555C68; --ink-3:#8A909B;
   --accent:#A3172E; --accent-ink:#FFFFFF; --accent-soft:#F7E3E6;
   --navy:#1E3A64; --navy-soft:#E1E8F3;
-  --ok:#1D7A4A; --ok-soft:#DDF1E5; --warn:#A35C00; --warn-soft:#FBEBD2;
+  --ok:#1D7A4A; --ok-soft:#DDF1E5; --c-rev:#2E62C9; --c-cost:#B8213A; --warn:#A35C00; --warn-soft:#FBEBD2;
   --shadow:0 1px 2px rgba(20,24,30,.06),0 8px 24px rgba(20,24,30,.08);
   --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -27,14 +27,14 @@
   --ink:#ECEEF1; --ink-2:#AAB0BA; --ink-3:#737A86;
   --accent:#E3485F; --accent-ink:#16080B; --accent-soft:#3A1920;
   --navy:#8DB1E8; --navy-soft:#1C2A40;
-  --ok:#5CCB8C; --ok-soft:#15301F; --warn:#F0A646; --warn-soft:#3A2A12;
+  --ok:#5CCB8C; --ok-soft:#15301F; --c-rev:#5B8FF0; --c-cost:#E3485F; --warn:#F0A646; --warn-soft:#3A2A12;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F1115; --surface:#181B21; --surface-2:#1F232A; --line:#2C313A;
   --ink:#ECEEF1; --ink-2:#AAB0BA; --ink-3:#737A86;
   --accent:#E3485F; --accent-ink:#16080B; --accent-soft:#3A1920;
   --navy:#8DB1E8; --navy-soft:#1C2A40;
-  --ok:#5CCB8C; --ok-soft:#15301F; --warn:#F0A646; --warn-soft:#3A2A12;
+  --ok:#5CCB8C; --ok-soft:#15301F; --c-rev:#5B8FF0; --c-cost:#E3485F; --warn:#F0A646; --warn-soft:#3A2A12;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -173,6 +173,30 @@ a.btn{text-decoration:none;color:inherit}
 .at{position:relative}
 .at span{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-2);pointer-events:none;font-weight:600}
 .f .at input{padding-left:27px}
+.chart-panel{padding:14px}
+.chart-wrap svg{width:100%;height:auto;display:block}
+.chart-wrap .grid{stroke:var(--line);stroke-width:1}
+.chart-wrap .ax{fill:var(--ink-3);font:500 11px var(--f-body)}
+.chart-wrap .ax.now{fill:var(--ink);font-weight:700}
+.chart-wrap .rev{fill:var(--c-rev)} .chart-wrap .cost{fill:var(--c-cost)}
+.chart-wrap .hit{fill:transparent} .chart-wrap .hit:hover{fill:var(--ink);fill-opacity:.05}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--ink-2);margin-bottom:6px}
+.legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.legend .sw.rev{background:var(--c-rev)} .legend .sw.cost{background:var(--c-cost)}
+.mtable table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;font-variant-numeric:tabular-nums}
+.mtable th,.mtable td{text-align:right;padding:6px 8px;border-top:1px solid var(--line)}
+.mtable th:first-child,.mtable td:first-child{text-align:left}
+.mtable th{color:var(--ink-3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-top:0}
+.neg{color:var(--accent)}
+.addm{padding:14px;display:grid;gap:8px}
+.addm input{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:9px 11px}
+.mrow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow .mi{flex:1;min-width:0;display:grid}
+.mrow .mi b{font-weight:600;overflow-wrap:anywhere}
+.mrow .mi span{font-size:12px;color:var(--ink-3)}
+.ma{font:500 14px var(--f-mono);white-space:nowrap}
+.ma.expense{color:var(--accent)} .ma.income{color:var(--ok)}
 .cacts{display:flex;gap:6px;padding:0 14px 12px;flex-wrap:wrap}
 .cacts .btn.no{margin-left:auto}
 .ccard:hover{border-color:var(--ink-3)}
@@ -296,6 +320,7 @@ img{max-width:100%}
       <button class="tab" data-view="bookings">Bookings</button>
       <button class="tab" data-view="clients">Clients</button>
       <button class="tab" data-view="portfolio">Portfolio</button>
+      <button class="tab" data-view="money">Money</button>
     </nav>
     <div class="actions">
       <a class="btn ghost out bp" href="/" target="_blank" rel="noopener">Booking page</a>
@@ -337,7 +362,7 @@ const fmtDay = s => parse(s).toLocaleDateString(undefined,{weekday:"short",month
 const fmtShort = s => parse(s).toLocaleDateString(undefined,{month:"short",day:"numeric"});
 const fmtLong = s => parse(s).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
 const fmtTime = t => { if(!t) return "—"; const [h,m] = t.split(":").map(Number); const ap = h>=12?"pm":"am"; return ((h%12)||12)+":"+pad(m)+ap; };
-const money = n => "$"+(Math.round((+n||0)*100)/100).toLocaleString(undefined,{maximumFractionDigits:2});
+const money = n => { const v = Math.round((+n||0)*100)/100; return (v<0?"−$":"$")+Math.abs(v).toLocaleString(undefined,{maximumFractionDigits:2}); };
 const initials = n => (n||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();
 const ago = days => days===0?"today":days===1?"yesterday":days<0?("in "+(-days)+" days"):days<14?(days+" days ago"):days<60?(Math.round(days/7)+" wks ago"):(Math.round(days/30)+" mo ago");
 const cycleText = d => d==null?"—":d<10?("every "+d+" days"):("every ~"+(Math.round(d/7*2)/2)+" wks");
@@ -364,7 +389,7 @@ const STATUS = {booked:"Pending",confirmed:"Confirmed",done:"Completed",declined
 
 /* ---------- state ---------- */
 const S = { clients:new Map(), bookings:new Map(), settings:{}, view:"today", week:monday(TODAY), q:"", sort:"due",
-  open:null, db:null, assets:null, mcp:null, gotC:false, gotB:false, err:null, requests:[], handled:new Set(), req:null };
+  open:null, db:null, assets:null, mcp:null, gotC:false, gotB:false, err:null, requests:[], handled:new Set(), req:null, money:[] };
 try { const v = localStorage.getItem("cb.view"); if (v) S.view = v; const so = localStorage.getItem("cb.sort"); if (so) S.sort = so; } catch(e){}
 
 $("#todayLbl").textContent = fmtLong(TODAY);
@@ -406,6 +431,7 @@ function render(){
   if (S.view==="today") h += viewToday();
   else if (S.view==="bookings") h += viewBookings();
   else if (S.view==="portfolio") h += viewPortfolio();
+  else if (S.view==="money") h += viewMoney();
   else h += viewClients();
   const li = $("#linkIn"), liVal = li ? li.value : null, liFocus = li && document.activeElement===li;
   m.innerHTML = h;
@@ -583,6 +609,81 @@ function viewBookings(){
     h += '</div>';
   }
   return h + '</div>';
+}
+
+/* ---------- Money (finances) ---------- */
+function monthKey(d){ return d ? d.slice(0,7) : null; }
+function monthName(k, long){ const [y,m] = k.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString(undefined,{month:long?"long":"short", year: long?"numeric":undefined}); }
+function moneyTotals(){
+  const paid = [...S.bookings.values()].filter(b=>b.status==="done" && b.paid);
+  const unpaid = [...S.bookings.values()].filter(b=>b.status==="done" && !b.paid);
+  const m = S.money || [];
+  const inc = m.filter(x=>x.kind==="income"), exp = m.filter(x=>x.kind==="expense");
+  const sum = a => a.reduce((s,x)=>s+(+x.price||+x.amount||0),0);
+  const months = {};
+  const add = (k, key, v) => { if (!k) return; (months[k] = months[k] || {rev:0, cost:0, cuts:0})[key] += v; };
+  paid.forEach(b=>{ add(monthKey(b.date),"rev",+b.price||0); add(monthKey(b.date),"cuts",1); });
+  inc.forEach(x=>add(monthKey(x.date),"rev",+x.amount||0));
+  exp.forEach(x=>add(monthKey(x.date),"cost",+x.amount||0));
+  const rev = sum(paid) + sum(inc), cost = sum(exp);
+  return { paid, unpaid, inc, exp, rev, cost, profit: rev-cost, owed: sum(unpaid), months, cutsPaid: paid.length };
+}
+function moneyChart(months){
+  // last 6 months, oldest → newest
+  const keys = []; const d = parse(TODAY); d.setDate(1);
+  for (let i=5;i>=0;i--){ const x = new Date(d.getFullYear(), d.getMonth()-i, 1); keys.push(x.getFullYear()+"-"+pad(x.getMonth()+1)); }
+  const data = keys.map(k=>({k, rev:(months[k]||{}).rev||0, cost:(months[k]||{}).cost||0}));
+  const max = Math.max(50, ...data.map(x=>Math.max(x.rev,x.cost)));
+  const step = max<=100?25:max<=300?50:max<=600?100:max<=1500?250:500;
+  const top = Math.ceil(max/step)*step;
+  const W = 640, H = 220, L = 44, R = 8, T = 10, B = 26, cw = (W-L-R)/data.length, bw = Math.min(26, cw/2-6);
+  const y = v => T + (H-T-B) * (1 - v/top);
+  let g = '';
+  for (let v=0; v<=top; v+=step) g += '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" class="grid"/><text x="'+(L-6)+'" y="'+(y(v)+4)+'" class="ax" text-anchor="end">$'+v+'</text>';
+  const bar = (x, v, cls, label) => { if (!v) return ''; const h = H-B-y(v); const r = Math.min(4, h);
+    return '<path class="'+cls+'" d="M'+x+','+(H-B)+' v'+(-(h-r))+' q0,'+(-r)+' '+r+','+(-r)+' h'+(bw-2*r)+' q'+r+',0 '+r+','+r+' v'+(h-r)+' z"><title>'+label+'</title></path>'; };
+  data.forEach((m,i)=>{
+    const cx = L + cw*i + cw/2;
+    g += bar(cx-bw-1, m.rev, "rev", monthName(m.k,true)+": "+money(m.rev)+" made");
+    g += bar(cx+1, m.cost, "cost", monthName(m.k,true)+": "+money(m.cost)+" spent");
+    g += '<rect x="'+(L+cw*i)+'" y="'+T+'" width="'+cw+'" height="'+(H-T-B)+'" class="hit" data-m="'+m.k+'"><title>'+monthName(m.k,true)+" · made "+money(m.rev)+" · spent "+money(m.cost)+" · profit "+money(m.rev-m.cost)+'</title></rect>';
+    g += '<text x="'+cx+'" y="'+(H-8)+'" class="ax'+(m.k===TODAY.slice(0,7)?' now':'')+'" text-anchor="middle">'+monthName(m.k)+'</text>';
+  });
+  return '<div class="chart-wrap"><div class="legend"><span><i class="sw rev"></i>Made</span><span><i class="sw cost"></i>Spent</span></div>'+
+    '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Money made and spent, last 6 months">'+g+'</svg></div>'+
+    '<div class="mtable" style="overflow-x:auto"><table><thead><tr><th>Month</th><th>Made</th><th>Spent</th><th>Profit</th></tr></thead><tbody>'+
+    data.slice().reverse().map(m=>'<tr><td>'+esc(monthName(m.k,true))+'</td><td>'+money(m.rev)+'</td><td>'+money(m.cost)+'</td><td class="'+(m.rev-m.cost<0?'neg':'')+'">'+money(m.rev-m.cost)+'</td></tr>').join("")+'</tbody></table></div>';
+}
+function moneyRow(x){
+  return '<div class="mrow"><div class="mi"><b>'+esc(x.item||"—")+'</b><span>'+(x.date?esc(fmtShort(x.date)):"Before the app")+(x.note?' · '+esc(x.note):'')+'</span></div>'+
+    '<span class="ma '+x.kind+'">'+(x.kind==="expense"?"−":"+")+money(x.amount)+'</span>'+
+    '<button class="btn small ghost" data-act="money-del" data-id="'+x.id+'" aria-label="Delete">✕</button></div>';
+}
+function viewMoney(){
+  const t = moneyTotals(), mk = TODAY.slice(0,7), cur = t.months[mk] || {rev:0,cost:0,cuts:0};
+  let h = '<div class="stats">'+
+    '<div class="stat"><div class="k">Profit · all time</div><div class="v '+(t.profit<0?'neg':'')+'">'+money(t.profit)+'</div><div class="s">made − spent</div></div>'+
+    '<div class="stat"><div class="k">Made · all time</div><div class="v">'+money(t.rev)+'</div><div class="s">'+t.cutsPaid+' paid cut'+(t.cutsPaid===1?'':'s')+' in the app + old sheet</div></div>'+
+    '<div class="stat"><div class="k">Spent · all time</div><div class="v">'+money(t.cost)+'</div><div class="s">'+t.exp.length+' expenses</div></div>'+
+    '<div class="stat"><div class="k">'+esc(monthName(mk))+' profit</div><div class="v '+(cur.rev-cur.cost<0?'neg':'')+'">'+money(cur.rev-cur.cost)+'</div><div class="s">'+(t.owed?'<span class="owed">'+money(t.owed)+' not paid yet</span>':money(cur.rev)+' made · '+money(cur.cost)+' spent')+'</div></div></div>';
+  h += '<div class="cols"><section><div class="sec-h"><h2>Last 6 months</h2><span class="meta">updates by itself</span></div><div class="panel chart-panel">'+moneyChart(t.months)+'</div>';
+  h += '<p class="pf-note" style="margin-top:12px">“Made” counts cuts you marked <b>Paid</b>, plus any extra income below. Unpaid cuts don\'t count until you mark them paid.</p></section>';
+  h += '<section><div class="sec-h"><h2>Add expense</h2><span class="meta">clippers, products, gas…</span></div>'+
+    '<form class="panel addm" id="expForm"><input id="expItem" placeholder="What did you buy?" maxlength="80" required aria-label="Expense item">'+
+    '<div class="two"><input id="expAmt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$ Cost" required aria-label="Cost"><input id="expDate" type="date" value="'+TODAY+'" aria-label="Date"></div>'+
+    '<button class="btn primary" type="submit">Add expense</button></form>';
+  h += '<div class="sec-h" style="margin-top:22px"><h2>Expenses</h2><span class="meta">'+money(t.cost)+' total</span></div><div class="panel">'+
+    (t.exp.length ? t.exp.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(moneyRow).join("") : '<div class="empty">No expenses yet.</div>')+'</div>';
+  h += '<div class="sec-h" style="margin-top:22px"><h2>Extra income</h2><button class="btn small ghost" data-act="inc-add">+ Add</button></div><div class="panel">'+
+    (S.incForm ? '<form class="addm" id="incForm"><input id="incItem" placeholder="e.g. Tip, house call" maxlength="80" required aria-label="Income item"><div class="two"><input id="incAmt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$ Amount" required aria-label="Amount"><input id="incDate" type="date" value="'+TODAY+'" aria-label="Date"></div><button class="btn primary" type="submit">Add income</button></form>' : '')+
+    (t.inc.length ? t.inc.map(moneyRow).join("") : (S.incForm?'':'<div class="empty">Tips or cash that isn\'t a booking go here.</div>'))+'</div></section></div>';
+  return h;
+}
+async function addMoney(kind, item, amount, date){
+  const id = uuid();
+  const { error } = await sb.from("money").insert({ id, kind, item, amount, date: date || null });
+  if (error){ toast(/relation|money/i.test(error.message) ? "Run the newest setup.sql in Supabase first." : "Couldn't save. Try again."); return false; }
+  S.money.push({ id, kind, item, amount, date: date || null, note:"" }); render(); return true;
 }
 
 function pfUrl(name){ return sb.storage.from("portfolio").getPublicUrl(name).data.publicUrl; }
@@ -861,6 +962,13 @@ document.addEventListener("click", async e => {
     case "unpay": try { await S.db.collection("bookings").doc(id).update({paid:false}); toast("Marked not paid"); } catch(err){ toast(sqlHint(err)); } break;
     case "copy": try { await navigator.clipboard.writeText(t.dataset.v); toast("Number copied"); } catch(_){ toast(t.dataset.v); } break;
     case "lb": lightbox(id); break;
+    case "inc-add": S.incForm = !S.incForm; render(); if (S.incForm) $("#incItem").focus(); break;
+    case "money-del": {
+      if (!arm(t,"Delete?")) return;
+      const { error } = await sb.from("money").delete().eq("id", id);
+      if (error) toast("Couldn't delete. Try again."); else { S.money = S.money.filter(x=>x.id!==id); render(); toast("Deleted"); }
+      break;
+    }
     case "pf-del": {
       if (!arm(t,"Tap again to remove")) return;
       const { error } = await sb.storage.from("portfolio").remove([id]);
@@ -936,6 +1044,18 @@ document.addEventListener("click", async e => {
     }
   }
 });
+document.addEventListener("submit", async e => {
+  if (e.target.id==="expForm"){ e.preventDefault();
+    const item = $("#expItem").value.trim(), amt = parseFloat($("#expAmt").value);
+    if (!item || !(amt>=0)) return;
+    if (await addMoney("expense", item, amt, $("#expDate").value)) toast("Expense added: "+item+" · "+money(amt));
+  }
+  if (e.target.id==="incForm"){ e.preventDefault();
+    const item = $("#incItem").value.trim(), amt = parseFloat($("#incAmt").value);
+    if (!item || !(amt>=0)) return;
+    if (await addMoney("income", item, amt, $("#incDate").value)){ S.incForm = false; render(); toast("Income added: "+money(amt)); }
+  }
+});
 document.addEventListener("input", e => {
   if (e.target.classList && e.target.classList.contains("ig-in") && e.target.value.startsWith("@")) e.target.value = e.target.value.replace(/^@+/,"");
   if (e.target.id==="q"){ S.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos,pos); }
@@ -1001,12 +1121,14 @@ S.assets = {
 };
 
 async function loadAll(){
-  const [c, b, r] = await Promise.all([
+  const [c, b, r, mo] = await Promise.all([
     sb.from("clients").select("*"),
     sb.from("bookings").select("*"),
     sb.from("requests").select("*").order("created_at",{ascending:false}).limit(500),
+    sb.from("money").select("*"),
   ]);
   if (c.error || b.error || r.error){ if (!S.gotC) { S.err = "Couldn't load your client book. Check your connection and reload."; render(); } return; }
+  S.money = mo.error ? (S.money||[]) : mo.data.map(x=>({id:x.id, kind:x.kind, item:x.item, amount:+x.amount||0, date:x.date, note:x.note||""}));
   S.clients = new Map(c.data.map(x=>[x.id, fromRow("clients",x)]));
   S.bookings = new Map(b.data.map(x=>[x.id, fromRow("bookings",x)]));
   const before = S.gotC ? new Set(pendingRequests().map(x=>x.key)) : null;
@@ -1056,6 +1178,7 @@ async function start(session){
     .on("postgres_changes", {event:"*", schema:"public", table:"requests"}, queueReload)
     .on("postgres_changes", {event:"*", schema:"public", table:"bookings"}, queueReload)
     .on("postgres_changes", {event:"*", schema:"public", table:"clients"}, queueReload)
+    .on("postgres_changes", {event:"*", schema:"public", table:"money"}, queueReload)
     .subscribe(status => { S.live = status==="SUBSCRIBED"; render(); });
   setInterval(loadAll, 60000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) loadAll(); });
