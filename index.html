@@ -309,6 +309,30 @@ document.addEventListener("keydown", e => { if (e.key==="Escape") $("#lb").inner
 loadPortfolio();
 try { if (Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k))) $("#adminLink").hidden = false; } catch(_){}
 
+/* confetti: a quick burst in barber-pole colors (skipped if the device asks for less motion) */
+function confetti(){
+  try { if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch(_){}
+  const cv = document.createElement("canvas");
+  cv.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999";
+  document.body.appendChild(cv);
+  const ctx = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio||1);
+  const W = innerWidth, H = innerHeight; cv.width = W*dpr; cv.height = H*dpr; ctx.scale(dpr,dpr);
+  const colors = ["#C8102E","#1E3A64","#FFFFFF","#E2A400","#E3485F","#8DB1E8"];
+  const parts = [];
+  const burst = (x, dir) => { for (let i=0;i<90;i++){ const a = (dir + (Math.random()-.5)*1.1), sp = 7+Math.random()*9;
+    parts.push({x, y:H*0.75, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, w:6+Math.random()*6, h:8+Math.random()*8, r:Math.random()*6, vr:(Math.random()-.5)*.35, c:colors[i%colors.length], life:0}); } };
+  burst(0, -Math.PI/3); burst(W, -2*Math.PI/3);
+  for (let i=0;i<70;i++) parts.push({x:Math.random()*W, y:-20-Math.random()*H*.4, vx:(Math.random()-.5)*2, vy:2+Math.random()*3, w:6+Math.random()*6, h:8+Math.random()*8, r:Math.random()*6, vr:(Math.random()-.5)*.3, c:colors[i%colors.length], life:0});
+  const t0 = performance.now();
+  (function frame(t){
+    const el = t - t0; ctx.clearRect(0,0,W,H);
+    for (const p of parts){ p.vy += 0.22; p.vx *= 0.99; p.vy *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - Math.max(0, el-2200)/900); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*1.7))+1); ctx.restore(); }
+    if (el < 3100) requestAnimationFrame(frame); else cv.remove();
+  })(t0);
+}
+
 /* booking */
 function showErr(msg){ const el = $("#err"); el.textContent = msg; el.hidden = !msg; }
 $("#bookForm").addEventListener("submit", async e => {
@@ -335,6 +359,7 @@ $("#bookForm").addEventListener("submit", async e => {
   $("#bookForm").hidden = true; $("#done").hidden = false;
   $("#doneTitle").textContent = "Got it, "+name.split(/\s+/)[0]+"!";
   $("#doneMsg").textContent = "I'll DM you at @"+ig+" to lock in a time.";
+  confetti();
   $("#book").scrollIntoView();
 });
 $("#again").addEventListener("click", () => {
