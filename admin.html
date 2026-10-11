@@ -257,10 +257,13 @@ img{max-width:100%}
   <form class="login-box" id="loginForm">
     <div class="pole" aria-hidden="true" style="border-radius:3px"></div>
     <h1>SMN Cutz</h1>
-    <p>Shop login. Enter your email and tap the link we send you.</p>
+    <p>Shop login. Only the owner can get in.</p>
     <label for="loginEmail" class="sr" style="position:absolute;left:-9999px">Email</label>
-    <input id="loginEmail" type="email" autocomplete="email" placeholder="you@gmail.com" required>
-    <button class="btn primary" id="loginBtn" type="submit">Email me a login link</button>
+    <input id="loginEmail" type="email" autocomplete="username" placeholder="Email" required>
+    <label for="loginPass" class="sr" style="position:absolute;left:-9999px">Password</label>
+    <input id="loginPass" type="password" autocomplete="current-password" placeholder="Password">
+    <button class="btn primary" id="loginBtn" type="submit">Log in</button>
+    <button class="btn ghost" id="linkBtn" type="button" style="font-size:13px">Forgot password? Email me a login link</button>
     <div id="loginMsg" role="status"></div>
   </form>
 </section>
@@ -949,11 +952,20 @@ function showLogin(msg){
 }
 $("#loginForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const email = $("#loginEmail").value.trim(); if (!email) return;
-  const btn = $("#loginBtn"); btn.disabled = true; btn.textContent = "Sending…";
-  const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin + "/admin" } });
-  btn.disabled = false; btn.textContent = "Email me a login link";
-  $("#loginMsg").textContent = error ? (/rate|seconds/i.test(error.message) ? "Wait a minute before asking for another link." : "Couldn't send the link: "+error.message) : "Check your email for the login link, then tap it on this device.";
+  const email = $("#loginEmail").value.trim(), password = $("#loginPass").value;
+  if (!email){ $("#loginEmail").focus(); return; }
+  if (!password){ $("#loginPass").focus(); $("#loginMsg").textContent = "Enter your password, or use the email link below."; return; }
+  const btn = $("#loginBtn"); btn.disabled = true; btn.textContent = "Logging in…";
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = "Log in";
+  if (error) $("#loginMsg").textContent = /invalid/i.test(error.message) ? "Wrong email or password." : "Couldn't log in: "+error.message;
+});
+$("#linkBtn").addEventListener("click", async () => {
+  const email = $("#loginEmail").value.trim(); if (!email){ $("#loginEmail").focus(); $("#loginMsg").textContent = "Type your email first."; return; }
+  const btn = $("#linkBtn"); btn.disabled = true;
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin + "/admin", shouldCreateUser:false } });
+  btn.disabled = false;
+  $("#loginMsg").textContent = error ? (/rate/i.test(error.message) ? "Too many login emails for now. Try again in an hour, or use your password." : "Couldn't send the link: "+error.message) : "Check your email for the login link, then tap it on this device.";
 });
 $("#logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
 
