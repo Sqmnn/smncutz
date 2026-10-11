@@ -128,6 +128,7 @@ a.tag:hover{border-color:var(--ink-3)}
 .done .check::after{content:"";width:16px;height:28px;border:solid var(--ok);border-width:0 4px 4px 0;transform:translateY(-3px) rotate(45deg)}
 .done h2{justify-content:center;font-size:34px}
 .done p{color:var(--ink-2);margin:8px auto 0;max-width:36ch}
+.done p b{color:var(--ink);font-size:18px;display:inline-block;margin-bottom:4px}
 footer{text-align:center;color:var(--ink-3);font-size:13px}
 footer a{color:inherit}
 </style>
@@ -360,7 +361,7 @@ $("#bookForm").addEventListener("submit", async e => {
   if (error) return showErr("That didn't go through. Try again, or DM @smncutz on Instagram.");
   $("#bookForm").hidden = true; $("#done").hidden = false;
   $("#doneTitle").textContent = "Got it, "+name.split(/\s+/)[0]+"!";
-  $("#doneMsg").textContent = "You're in good hands! I'll DM you at @"+ig+" to lock in a time.";
+  $("#doneMsg").replaceChildren(Object.assign(document.createElement("b"),{textContent:"You're in good hands!"}), document.createElement("br"), "I'll DM you at @"+ig+" to lock in a time.");
   confetti();
   $("#book").scrollIntoView();
 });
