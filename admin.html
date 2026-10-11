@@ -109,6 +109,12 @@ main{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 100px
 .req .ra{display:flex;gap:6px;align-items:center}
 .count{display:inline-block;background:var(--accent);color:var(--accent-ink);font:600 13px/1 var(--f-body);padding:4px 8px;border-radius:999px;vertical-align:middle;letter-spacing:0}
 .syncline a{color:var(--navy)}
+.req .ig{font-size:13px;color:var(--navy);text-decoration:none;margin-left:4px}
+.pf-note{color:var(--ink-2);font-size:14px;margin:0 0 12px;max-width:60ch}
+.pfgrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.pfgrid .photo{position:relative}
+.pfdel{position:absolute;right:6px;top:6px;background:var(--surface);opacity:.92}
+@media (max-width:760px){ .tab{padding:10px 2px;font-size:13px} }
 .pill.online{background:var(--ok-soft);color:var(--ok)}
 .bookcard{padding:12px 14px;display:grid;gap:10px;margin-bottom:22px}
 .linkrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -266,6 +272,7 @@ img{max-width:100%}
       <button class="tab" data-view="today" aria-current="true">Today</button>
       <button class="tab" data-view="bookings">Bookings</button>
       <button class="tab" data-view="clients">Clients</button>
+      <button class="tab" data-view="portfolio">Portfolio</button>
     </nav>
     <div class="actions">
       <a class="btn ghost out bp" href="/" target="_blank" rel="noopener">Booking page</a>
@@ -288,6 +295,7 @@ img{max-width:100%}
 <div id="toastRoot"></div>
 </div>
 <input type="file" id="fileIn" accept="image/*" multiple hidden>
+<input type="file" id="pfIn" accept="image/*" multiple hidden>
 
 <script>
 (function(){
@@ -311,9 +319,10 @@ const initials = n => (n||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").j
 const ago = days => days===0?"today":days===1?"yesterday":days<0?("in "+(-days)+" days"):days<14?(days+" days ago"):days<60?(Math.round(days/7)+" wks ago"):(Math.round(days/30)+" mo ago");
 const cycleText = d => d==null?"—":d<10?("every "+d+" days"):("every ~"+(Math.round(d/7*2)/2)+" wks");
 const MENU = [
-  {id:"cut",   name:"Cut",      price:25, mins:30},
-  {id:"beard", name:"Beard",    price:10, mins:15, alone:15},
+  {id:"cut",   name:"Haircut",  price:25, mins:30},
   {id:"brows", name:"Eyebrows", price:5,  mins:10, alone:5},
+  {id:"beard", name:"Beard",    price:10, mins:15, alone:15},
+  {id:"other", name:"Other",    price:0,  mins:0},
 ];
 const TZ = (()=>{ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; } catch(_){ return "America/New_York"; } })();
 function pickFromText(t){
@@ -321,12 +330,13 @@ function pickFromText(t){
   if (/\bcut|haircut|scissor|fade|taper|line ?up/.test(t)) s.add("cut");
   if (/beard|facial/.test(t)) s.add("beard");
   if (/brow/.test(t)) s.add("brows");
+  if (/\bother\b/.test(t)) s.add("other");
   if (!s.size) s.add("cut");
   return s;
 }
 function priceFor(set){ const c = set.has("cut"); return MENU.reduce((s,m)=>set.has(m.id) ? s + (c||m.id==="cut" ? m.price : (m.alone ?? m.price)) : s, 0); }
 function minsFor(set){ return Math.max(15, MENU.reduce((s,m)=>set.has(m.id) ? s+m.mins : s, 0)); }
-function labelFor(set){ const n = MENU.filter(m=>set.has(m.id)).map(m=>m.name); return (!set.has("cut") && n.length===1) ? n[0]+" only" : n.join(" + "); }
+function labelFor(set){ const n = MENU.filter(m=>set.has(m.id)).map(m=>m.name); return (!set.has("cut") && n.length===1 && n[0]!=="Other") ? n[0]+" only" : n.join(" + "); }
 const STATUS = {booked:"Booked",done:"Done",no_show:"No-show",cancelled:"Cancelled"};
 
 /* ---------- state ---------- */
@@ -372,6 +382,7 @@ function render(){
   if (ex) h += '<div class="banner"><span>These are example clients and bookings so you can see how it works. Clear them when you\'re ready to add your own.</span><button class="btn small" data-act="clear-ex">Clear examples</button></div>';
   if (S.view==="today") h += viewToday();
   else if (S.view==="bookings") h += viewBookings();
+  else if (S.view==="portfolio") h += viewPortfolio();
   else h += viewClients();
   const li = $("#linkIn"), liVal = li ? li.value : null, liFocus = li && document.activeElement===li;
   m.innerHTML = h;
@@ -403,8 +414,11 @@ function requestsHtml(){
   let h = '<div class="sec-h"><h2>New requests'+(pend.length?' <span class="count">'+pend.length+'</span>':'')+'</h2><span class="meta">from your booking page</span></div><div class="panel">';
   if (!pend.length) h += '<div class="empty"><b>No new requests</b>When someone books on your site, they pop up here and you pick the day and time.</div>';
   else h += pend.map(r=>{ const p = pickFromText(r.wants);
-    return '<div class="req"><div class="info"><b>'+esc(r.name)+'</b><div>'+esc(labelFor(p))+' · '+money(priceFor(p))+(r.phone?' · <span class="mono">'+esc(r.phone)+'</span>':'')+'</div>'+
-      (r.notes?'<div class="rn">“'+esc(r.notes)+'”</div>':'')+(r.at?'<div class="rt">asked '+esc(agoTime(r.at))+'</div>':'')+'</div>'+
+    return '<div class="req"><div class="info"><b>'+esc(r.name)+'</b>'+(r.ig?' <a class="ig" href="https://instagram.com/'+encodeURIComponent(r.ig)+'" target="_blank" rel="noopener">@'+esc(r.ig)+'</a>':'')+
+      '<div>'+esc(labelFor(p))+(p.has("other")&&p.size===1?'':' · '+money(priceFor(p))+(p.has("other")?'+':''))+(r.phone?' · <span class="mono">'+esc(r.phone)+'</span>':'')+'</div>'+
+      (r.other?'<div class="rn">Other: “'+esc(r.other)+'”</div>':'')+
+      (r.notes?'<div class="rn">'+esc(r.notes)+'</div>':'')+
+      '<div class="rt">'+(r.at?'asked '+esc(agoTime(r.at)):'')+(r.heard?' · heard from '+esc(r.heard):'')+'</div></div>'+
       '<div class="ra"><button class="btn small primary" data-act="sched" data-id="'+r.key+'">Pick a time</button><button class="btn small ghost" data-act="dismiss" data-id="'+r.key+'">Dismiss</button></div></div>'; }).join("");
   return h + '</div>';
 }
@@ -505,10 +519,26 @@ function viewBookings(){
   return h + '</div>';
 }
 
+function pfUrl(name){ return sb.storage.from("portfolio").getPublicUrl(name).data.publicUrl; }
+async function loadPortfolio(){
+  const { data, error } = await sb.storage.from("portfolio").list("", { limit:200, sortBy:{ column:"created_at", order:"desc" } });
+  S.pfErr = !!error; if (!error) S.pf = (data||[]).filter(f=>f.id && !f.name.startsWith("."));
+  S.pfLoaded = true; if (S.view==="portfolio") render();
+}
+function viewPortfolio(){
+  const list = S.pf || [];
+  let h = '<div class="sec-h"><h2>Portfolio</h2><span class="meta">'+list.length+' photo'+(list.length===1?'':'s')+' · shows on your booking page</span></div>';
+  h += '<p class="pf-note">Everything here shows in “The work” on your booking page. Add your best cuts. You can also open a photo in a client\'s file and tap “Add to portfolio”.</p>';
+  if (S.pfErr) h += '<div class="panel empty">Couldn\'t load your portfolio. Make sure you ran the latest setup.sql in Supabase.</div>';
+  h += '<div class="photos pfgrid"><label class="upload" for="pfIn"><span>+ Add photos<br><span style="font-size:11px;color:var(--ink-3)">best cuts only</span></span></label>'+
+    list.map(f=>'<div class="photo"><img loading="lazy" alt="Portfolio cut" src="'+esc(pfUrl(f.name))+'"><button class="btn small pfdel" data-act="pf-del" data-id="'+esc(f.name)+'">Remove</button></div>').join("")+'</div>';
+  return h;
+}
+
 function viewClients(){
   let list = [...S.clients.values()].map(c=>({c,s:statsFor(c)}));
   const q = S.q.trim().toLowerCase();
-  if (q) list = list.filter(({c})=>[c.name,c.phone,c.cut,c.notes].join(" ").toLowerCase().includes(q));
+  if (q) list = list.filter(({c})=>[c.name,c.phone,c.instagram,c.cut,c.notes].join(" ").toLowerCase().includes(q));
   const sorts = {
     due:(a,b)=>(a.s.dueIn??9999)-(b.s.dueIn??9999),
     name:(a,b)=>a.c.name.localeCompare(b.c.name),
@@ -550,7 +580,9 @@ function renderSheet(){
     '<button class="btn small" data-act="edit-c" data-id="'+c.id+'">Edit</button><button class="btn small primary" data-act="book-for" data-id="'+c.id+'">Book</button></div></div>'+
     '<div class="sheet-b">'+
     '<div class="idcard">'+avatar(c,true)+'<div style="min-width:0"><h2>'+esc(c.name)+'</h2><div class="ph">'+
-      (c.phone?'<span class="mono" style="font-size:14px">'+esc(c.phone)+'</span><button class="btn small ghost" data-act="copy" data-v="'+esc(c.phone)+'">Copy</button>':'<span style="color:var(--ink-3);font-size:14px">No phone saved</span>')+
+      (c.instagram?'<a class="btn small" href="https://ig.me/m/'+encodeURIComponent(c.instagram)+'" target="_blank" rel="noopener">DM @'+esc(c.instagram)+'</a>':'')+
+      (c.phone?'<span class="mono" style="font-size:14px">'+esc(c.phone)+'</span><button class="btn small ghost" data-act="copy" data-v="'+esc(c.phone)+'">Copy</button>':'')+
+      (!c.phone&&!c.instagram?'<span style="color:var(--ink-3);font-size:14px">No contact saved</span>':'')+
       (s.next?'<span class="pill booked">Next: '+esc(fmtShort(s.next.date))+' '+fmtTime(s.next.time)+'</span>':s.dueIn!=null&&s.dueIn<=3?'<span class="pill due">'+(s.dueIn<0?(-s.dueIn)+' days overdue':'Due soon')+'</span>':'')+
     '</div></div></div>'+
     '<div class="minis">'+
@@ -581,7 +613,8 @@ function clientModal(id){
   const c = id ? S.clients.get(id) : {};
   $("#modalRoot").innerHTML = '<div class="modal" data-act="modal-bg"><div class="mbox" role="dialog" aria-label="Client"><h2>'+(id?"Edit client":"New client")+'</h2><form class="form" id="cForm">'+
     field("cName","Name",'<input id="cName" required autocomplete="off" value="'+esc(c.name)+'">')+
-    field("cPhone","Phone",'<input id="cPhone" type="tel" autocomplete="off" value="'+esc(c.phone)+'">')+
+    '<div class="two">'+field("cIg","Instagram",'<input id="cIg" autocomplete="off" autocapitalize="off" placeholder="handle" value="'+esc(c.instagram)+'">')+
+    field("cPhone","Phone",'<input id="cPhone" type="tel" autocomplete="off" value="'+esc(c.phone)+'">')+'</div>'+
     field("cCut","Their cut",'<textarea id="cCut" placeholder="e.g. Low taper, #2 on sides, scissor top, natural neckline">'+esc(c.cut)+'</textarea>')+
     field("cCycle","Usual cycle (weeks)",'<input id="cCycle" type="number" min="0.5" step="0.5" inputmode="decimal" value="'+esc(c.cycleWeeks||"")+'">',"Leave blank and it'll be worked out from their visits.")+
     field("cNotes","Notes",'<textarea id="cNotes" placeholder="Allergies to products, likes a hot towel, talks football…">'+esc(c.notes)+'</textarea>')+
@@ -593,7 +626,7 @@ function clientModal(id){
   $("#cForm").onsubmit = async e => {
     e.preventDefault();
     const body = Object.assign({}, c, {
-      name: $("#cName").value.trim(), phone: $("#cPhone").value.trim(), cut: $("#cCut").value.trim(),
+      name: $("#cName").value.trim(), phone: $("#cPhone").value.trim(), instagram: $("#cIg").value.trim().replace(/^@+/,""), cut: $("#cCut").value.trim(),
       cycleWeeks: parseFloat($("#cCycle").value) || null, notes: $("#cNotes").value.trim(),
     });
     delete body.id;
@@ -608,13 +641,13 @@ function clientModal(id){
 }
 
 function bookingModal(id, preset={}){
-  const b = id ? S.bookings.get(id) : Object.assign({date:TODAY, time:"", service:"Cut", price:priceFor(new Set(["cut"])), status:"booked"}, preset);
+  const b = id ? S.bookings.get(id) : Object.assign({date:TODAY, time:"", service:"Haircut", price:priceFor(new Set(["cut"])), status:"booked"}, preset);
   const picks = preset.picks ? new Set(preset.picks) : pickFromText(b.service);
   const clients = [...S.clients.values()].sort((a,z)=>a.name.localeCompare(z.name));
   const isNew = !id && !!preset.newName;
   $("#modalRoot").innerHTML = '<div class="modal" data-act="modal-bg"><div class="mbox" role="dialog" aria-label="Booking"><h2>'+(id?"Edit booking":preset.reqKey?"Schedule request":"New booking")+'</h2><form class="form" id="bForm">'+
     field("bClient","Client",'<select id="bClient" required><option value="">Choose a client…</option>'+clients.map(c=>'<option value="'+c.id+'"'+(c.id===b.clientId?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'<option value="__new"'+(isNew?" selected":"")+'>+ New client…</option></select>')+
-    '<div class="two" id="newNameWrap"'+(isNew?"":" hidden")+'>'+field("bNewName","New client name",'<input id="bNewName" autocomplete="off" value="'+esc(preset.newName||"")+'">')+field("bNewPhone","Phone",'<input id="bNewPhone" type="tel" autocomplete="off" value="'+esc(preset.newPhone||"")+'">')+'</div>'+
+    '<div class="two" id="newNameWrap"'+(isNew?"":" hidden")+'>'+field("bNewName","New client name",'<input id="bNewName" autocomplete="off" value="'+esc(preset.newName||"")+'">')+field("bNewIg","Instagram",'<input id="bNewIg" autocomplete="off" autocapitalize="off" placeholder="handle" value="'+esc(preset.newIg||"")+'">')+'</div>'+
     '<div class="two">'+field("bDate","Date",'<input id="bDate" type="date" required value="'+esc(b.date)+'">')+field("bTime","Time",'<input id="bTime" type="time" step="900" value="'+esc(b.time)+'">')+'</div>'+
     '<div class="f"><label>Service <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)">· tap to add</span></label><div class="chips" id="svcChips">'+MENU.map(m=>'<button type="button" class="chip" data-id="'+m.id+'" aria-pressed="'+picks.has(m.id)+'">'+esc(m.name)+'</button>').join("")+'</div></div>'+
     '<div class="two">'+field("bService","Calendar name",'<input id="bService" value="'+esc(id?b.service:labelFor(picks))+'">')+field("bPrice","Price ($)",'<input id="bPrice" type="number" min="0" step="0.5" inputmode="decimal" value="'+esc(id?b.price:priceFor(picks))+'">')+'</div>'+
@@ -627,7 +660,7 @@ function bookingModal(id, preset={}){
     '</form></div></div>';
   const sel = $("#bClient");
   const hint = () => { const nm = sel.value==="__new" ? ($("#bNewName").value.trim()||"Name") : (sel.value ? clientName(sel.value) : "Name");
-    $("#calHint").textContent = "Calendar name: “"+nm+" — "+($("#bService").value.trim()||"Cut")+"”. Tap + Calendar on the booking to add it to Google Calendar."; };
+    $("#calHint").textContent = "Calendar name: “"+nm+" — "+($("#bService").value.trim()||"Haircut")+"”. Tap + Calendar on the booking to add it to Google Calendar."; };
   sel.onchange = () => { $("#newNameWrap").hidden = sel.value!=="__new"; if(sel.value==="__new") $("#bNewName").focus(); hint(); };
   $("#bNewName").oninput = hint; $("#bService").oninput = hint;
   $("#svcChips").onclick = e => { const ch = e.target.closest(".chip"); if(!ch) return;
@@ -645,7 +678,7 @@ function bookingModal(id, preset={}){
       if (cid==="__new"){
         const nm = $("#bNewName").value.trim(); if(!nm){ $("#bNewName").focus(); btn.disabled = false; return; }
         const ref = S.db.collection("clients").doc();
-        await ref.set({name:nm, phone:$("#bNewPhone").value.trim(), cut:"", notes:"", cycleWeeks:null, photos:[], createdAt:new Date().toISOString(), source:preset.reqKey?"form":"manual"});
+        await ref.set({name:nm, phone:preset.newPhone||"", instagram:$("#bNewIg").value.trim().replace(/^@+/,""), cut:"", notes:"", cycleWeeks:null, photos:[], createdAt:new Date().toISOString(), source:preset.reqKey?"form":"manual"});
         cid = ref.id;
       }
       if (!cid){ btn.disabled = false; return; }
@@ -655,7 +688,7 @@ function bookingModal(id, preset={}){
         notes: $("#bNotes").value.trim(), status: id ? $("#bStatus").value : "booked",
       });
       if (preset.reqKey){ body.source = "form"; body.requestKey = preset.reqKey; }
-      delete body.id; delete body.picks; delete body.newName; delete body.newPhone; delete body.reqKey;
+      delete body.id; delete body.picks; delete body.newName; delete body.newPhone; delete body.newIg; delete body.reqKey;
       const ref = id ? S.db.collection("bookings").doc(id) : S.db.collection("bookings").doc();
       await ref.set(body);
       if (preset.reqKey) await S.db.collection("requests").doc(preset.reqKey).set({status:"scheduled", bookingId:ref.id, at:new Date().toISOString()});
@@ -676,6 +709,7 @@ function lightbox(pid){
   const c = S.clients.get(S.open); if(!c) return;
   const p = (c.photos||[]).find(x=>x.id===pid); if(!p) return;
   $("#lbRoot").innerHTML = '<div class="lb" data-act="lb-close"><img alt="" data-path="'+esc(pid)+'" src="'+esc(photoSrc(pid))+'"><div class="bar"><span>'+esc(c.name)+' · '+esc(fmtLong(p.at))+'</span>'+
+    '<button class="btn small" data-act="pf-add" data-id="'+esc(pid)+'">Add to portfolio</button>'+
     (S.assets?'<button class="btn small" data-act="del-photo" data-id="'+esc(pid)+'">Delete photo</button>':'')+
     '<button class="btn small" data-act="lb-close">Close</button></div></div>';
 }
@@ -696,6 +730,17 @@ function shrink(file){
     img.src = url;
   });
 }
+$("#pfIn").addEventListener("change", async e => {
+  const files = [...e.target.files]; e.target.value = ""; if (!files.length) return;
+  toast("Uploading "+files.length+" photo"+(files.length>1?"s":"")+"…", 60000);
+  let ok = 0;
+  for (const f of files){
+    try { const blob = await shrink(f); const ext = (blob.type||"image/jpeg").split("/")[1].replace("jpeg","jpg");
+      const { error } = await sb.storage.from("portfolio").upload(Date.now()+"-"+uuid()+"."+ext, blob, {contentType:blob.type||"image/jpeg"}); if (!error) ok++; } catch(_){}
+  }
+  toast(ok ? ok+" photo"+(ok>1?"s":"")+" added to your portfolio" : "Upload didn't work. Try again.");
+  loadPortfolio();
+});
 $("#fileIn").addEventListener("change", async e => {
   const files = [...e.target.files]; e.target.value = "";
   const cid = S.open; if (!files.length || !cid || !S.assets) return;
@@ -740,6 +785,22 @@ document.addEventListener("click", async e => {
     case "done": try { await S.db.collection("bookings").doc(id).update({status:"done"}); toast("Marked done"); } catch(err){ toast("Couldn't update. Try again."); } break;
     case "copy": try { await navigator.clipboard.writeText(t.dataset.v); toast("Number copied"); } catch(_){ toast(t.dataset.v); } break;
     case "lb": lightbox(id); break;
+    case "pf-del": {
+      if (!arm(t,"Tap again to remove")) return;
+      const { error } = await sb.storage.from("portfolio").remove([id]);
+      if (error) toast("Couldn't remove it. Try again."); else { toast("Removed from portfolio"); loadPortfolio(); }
+      break;
+    }
+    case "pf-add": {
+      t.disabled = true; t.textContent = "Adding…";
+      try {
+        const { data:blob, error:e1 } = await sb.storage.from("photos").download(id); if (e1) throw e1;
+        const ext = (blob.type||"image/jpeg").split("/")[1].replace("jpeg","jpg");
+        const { error:e2 } = await sb.storage.from("portfolio").upload(Date.now()+"-"+uuid()+"."+ext, blob, {contentType:blob.type||"image/jpeg"}); if (e2) throw e2;
+        t.textContent = "In portfolio ✓"; toast("Added to your portfolio"); loadPortfolio();
+      } catch(err){ t.disabled = false; t.textContent = "Add to portfolio"; toast("Couldn't add it. Try again."); }
+      break;
+    }
     case "lb-close": if (e.target===t || t.tagName==="BUTTON") $("#lbRoot").innerHTML=""; break;
     case "del-photo": {
       if (!arm(t,"Tap again to delete")) return;
@@ -767,9 +828,10 @@ document.addEventListener("click", async e => {
     case "sched": {
       const r = (S.requests||[]).find(x=>x.key===id); if (!r) return;
       const digits = v => String(v||"").replace(/\D/g,"").slice(-10);
-      const m = [...S.clients.values()].find(c=>r.phone && digits(c.phone) && digits(c.phone)===digits(r.phone)) ||
+      const m = [...S.clients.values()].find(c=>r.ig && (c.instagram||"").toLowerCase()===r.ig.toLowerCase()) ||
+                [...S.clients.values()].find(c=>r.phone && digits(c.phone) && digits(c.phone)===digits(r.phone)) ||
                 [...S.clients.values()].find(c=>c.name.trim().toLowerCase()===r.name.trim().toLowerCase());
-      bookingModal(null, {clientId:m?m.id:undefined, newName:m?undefined:r.name, newPhone:m?undefined:r.phone, picks:[...pickFromText(r.wants)], notes:r.notes, reqKey:r.key});
+      bookingModal(null, {clientId:m?m.id:undefined, newName:m?undefined:r.name, newIg:m?undefined:r.ig, newPhone:m?undefined:r.phone, picks:[...pickFromText(r.wants)], notes:[r.other?"Other: "+r.other:"", r.notes].filter(Boolean).join(" · "), reqKey:r.key});
       break;
     }
     case "dismiss": {
@@ -823,7 +885,7 @@ function toast(msg, ms=2600){
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
 const sb = window.supabase.createClient(SMN.url, SMN.key, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
 const TABLES = {
-  clients:  {name:"name", phone:"phone", email:"email", cut:"cut", notes:"notes", cycleWeeks:"cycle_weeks", photos:"photos", source:"source", createdAt:"created_at"},
+  clients:  {name:"name", phone:"phone", instagram:"instagram", email:"email", cut:"cut", notes:"notes", cycleWeeks:"cycle_weeks", photos:"photos", source:"source", createdAt:"created_at"},
   bookings: {clientId:"client_id", clientName:"client_name", date:"date", time:"time", service:"service", price:"price", mins:"mins", status:"status", notes:"notes", source:"source", requestKey:"request_id"},
   requests: {status:"status", bookingId:"booking_id"},
 };
@@ -871,7 +933,7 @@ async function loadAll(){
   S.clients = new Map(c.data.map(x=>[x.id, fromRow("clients",x)]));
   S.bookings = new Map(b.data.map(x=>[x.id, fromRow("bookings",x)]));
   const before = S.gotC ? new Set(pendingRequests().map(x=>x.key)) : null;
-  S.requests = r.data.map(x=>({ key:x.id, name:x.name, phone:x.phone, wants:(x.services||[]).join(", "), notes:x.notes||"", at:Date.parse(x.created_at)||0 }));
+  S.requests = r.data.map(x=>({ key:x.id, name:x.name, phone:x.phone||"", ig:x.instagram||"", heard:x.heard_from||"", other:x.other_request||"", wants:(x.services||[]).join(", "), notes:x.notes||"", at:Date.parse(x.created_at)||0 }));
   S.handled = new Set(r.data.filter(x=>x.status!=="new").map(x=>x.id));
   S.gotC = S.gotB = true;
   if (before){ const fresh = pendingRequests().filter(x=>!before.has(x.key)); if (fresh.length) toast(fresh.length===1 ? "New booking request from "+fresh[0].name : fresh.length+" new booking requests", 5000); }
@@ -903,6 +965,7 @@ async function start(session){
   if (!isOwner){ started = false; await sb.auth.signOut(); showLogin("That email isn't the SMN Cutz owner account."); return; }
   $("#login").hidden = true; $("#app").hidden = false;
   await loadAll();
+  loadPortfolio();
   sb.channel("smn-live")
     .on("postgres_changes", {event:"*", schema:"public", table:"requests"}, queueReload)
     .on("postgres_changes", {event:"*", schema:"public", table:"bookings"}, queueReload)

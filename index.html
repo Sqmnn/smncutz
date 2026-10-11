@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SMN Cutz · Book a cut</title>
-<meta name="description" content="Book a cut with SMN Cutz in New Brunswick, NJ. Pick what you want and I'll text you a time.">
-<meta property="og:title" content="SMN Cutz · Book a cut">
-<meta property="og:description" content="Pick what you want and I'll text you a time.">
+<title>SMN Cutz · Jersey Barber</title>
+<meta name="description" content="SMN Cutz, a Jersey barber. See the work, pick what you want, and I'll DM you a time.">
+<meta property="og:title" content="SMN Cutz · Jersey Barber">
+<meta property="og:description" content="See the work, pick what you want, and I'll DM you a time.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: one narrow column, phone first: name, menu of services as big tap tiles, your info, send. */
+/* Layout: one narrow column, phone first: name + book button, portfolio grid, menu tiles, your info, send. */
 :root{
   --bg:#EEF0F2; --surface:#FFFFFF; --surface-2:#F6F7F8; --line:#D9DDE2;
   --ink:#15181E; --ink-2:#555C68; --ink-3:#8A909B;
@@ -28,21 +28,36 @@
   --accent:#E3485F; --accent-ink:#16080B; --accent-soft:#3A1920;
   --navy:#8DB1E8; --navy-soft:#1C2A40; --ok:#5CCB8C; --ok-soft:#15301F; color-scheme:dark}}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);min-height:100vh}
 button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--navy);outline-offset:2px}
 [hidden]{display:none!important}
+img{max-width:100%}
 .pole{height:6px;background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,var(--surface) 10px 16px,var(--navy) 16px 26px,var(--surface) 26px 32px)}
 .wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:28px 48px;display:grid;gap:22px}
 .hero h1{margin:0;font:800 clamp(56px,16vw,92px)/.9 var(--f-display);text-transform:uppercase;letter-spacing:.01em}
+.hero .kicker{font:800 18px/1 var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin-bottom:8px}
 .hero p{margin:10px 0 0;color:var(--ink-2);font-size:17px;max-width:40ch}
-.hero .where{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.tag{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);text-decoration:none}
+.hero .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font:800 20px/1 var(--f-display);text-transform:uppercase;letter-spacing:.05em;padding:13px 20px;border-radius:10px}
+.tag{font-size:13px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);text-decoration:none}
 a.tag:hover{border-color:var(--ink-3)}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sec-h h2{margin:0;font:800 28px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.sec-h a{font-size:14px;color:var(--ink-2)}
+.pf{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.pf button{padding:0;border:0;background:var(--surface-2);border-radius:8px;overflow:hidden;aspect-ratio:4/5;cursor:zoom-in;max-width:100%}
+.pf img{width:100%;height:100%;object-fit:cover;display:block}
+.pf-empty{margin-top:12px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--ink-2)}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
+.lb img{max-height:82vh;border-radius:10px}
+.lb button{background:#222;color:#fff;border:1px solid #444;border-radius:8px;padding:8px 16px;cursor:pointer}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
 .card h2{margin:0;font:800 26px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;display:flex;gap:10px;align-items:baseline}
 .card h2 .n{font:500 13px var(--f-mono);color:var(--ink-3);letter-spacing:0}
+.group-lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:-6px}
 .tiles{display:grid;gap:10px}
 .tile{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface-2);border:1.5px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
 .tile:hover{border-color:var(--ink-3)}
@@ -54,16 +69,20 @@ a.tag:hover{border-color:var(--ink-3)}
 .tile .txt b{display:block;font-size:17px;font-weight:600}
 .tile .txt span{font-size:14px;color:var(--ink-2)}
 .tile .pr{font:500 16px var(--f-mono);white-space:nowrap}
-.total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px}
-.total b{font:800 30px var(--f-display);font-variant-numeric:tabular-nums}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px;gap:10px}
+.total b{font:800 30px var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap}
 .total span{color:var(--ink-2);font-size:14px}
 .f{display:grid;gap:5px}
-.f label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2)}
+.f label,.f .lbl{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2)}
 .f input,.f textarea{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:12px;font-size:16px}
 .f textarea{min-height:70px;resize:vertical}
+.at{position:relative}
+.at span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+.at input{padding-left:28px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:7px 13px;font-size:14px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.opt{text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)}
 .send{border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:800 24px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;padding:18px;cursor:pointer;width:100%}
 .send:disabled{opacity:.6;cursor:default}
 .fine{font-size:14px;color:var(--ink-2);margin:0;text-align:center}
@@ -84,28 +103,48 @@ footer a{color:inherit}
 <div class="pole" aria-hidden="true"></div>
 <main class="wrap">
   <header class="hero">
+    <div class="kicker">Jersey barber</div>
     <h1>SMN Cutz</h1>
-    <p>Clean cuts in New Brunswick. Pick what you want, send it, and I'll text you a time.</p>
-    <div class="where"><span class="tag">New Brunswick, NJ</span><span class="tag">Near Rutgers College Ave</span><a class="tag" href="https://instagram.com/smncutz" target="_blank" rel="noopener">@smncutz</a></div>
+    <p>Clean men's cuts in Jersey. Check the work, pick what you want, and I'll DM you a time.</p>
+    <div class="row"><a class="cta" href="#book">Book a cut</a><a class="tag" href="https://instagram.com/smncutz" target="_blank" rel="noopener">@smncutz</a></div>
   </header>
 
-  <form id="bookForm" class="card-stack" style="display:grid;gap:22px" novalidate>
-    <section class="card" aria-labelledby="h1">
+  <section id="work" aria-labelledby="pfH">
+    <div class="sec-h"><h2 id="pfH">The work</h2><a href="https://instagram.com/smncutz" target="_blank" rel="noopener">More on IG</a></div>
+    <div class="pf" id="pf"></div>
+    <div class="pf-empty" id="pfEmpty" hidden>New cuts going up soon. Peep <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">@smncutz</a> in the meantime.</div>
+  </section>
+
+  <form id="bookForm" style="display:grid;gap:22px" novalidate>
+    <section class="card" id="book" aria-labelledby="h1">
       <h2 id="h1"><span class="n">1</span>What do you want?</h2>
       <div class="tiles" id="tiles">
-        <button type="button" class="tile" data-id="Cut" aria-pressed="true"><span class="box"></span><span class="txt"><b>Cut</b><span>Scissors and clippers, cleaned up</span></span><span class="pr">$25</span></button>
-        <button type="button" class="tile" data-id="Beard" aria-pressed="false"><span class="box"></span><span class="txt"><b>Beard / facial hair</b><span>Shape-up and lineup</span></span><span class="pr" data-p="beard">+$10</span></button>
-        <button type="button" class="tile" data-id="Eyebrows" aria-pressed="false"><span class="box"></span><span class="txt"><b>Eyebrows</b><span>Quick clean-up</span></span><span class="pr" data-p="brows">+$5</span></button>
+        <button type="button" class="tile" data-id="Haircut" aria-pressed="true"><span class="box"></span><span class="txt"><b>Men's haircut</b><span>Fade, taper or scissor cut, lined up clean</span></span><span class="pr">$25</span></button>
+        <div class="group-lbl">Add-ons</div>
+        <button type="button" class="tile" data-id="Eyebrows" aria-pressed="false"><span class="box"></span><span class="txt"><b>Eyebrows</b><span>Quick clean-up</span></span><span class="pr" data-p="Eyebrows">+$5</span></button>
+        <button type="button" class="tile" data-id="Beard" aria-pressed="false"><span class="box"></span><span class="txt"><b>Beard</b><span>Shape-up and lineup</span></span><span class="pr" data-p="Beard">+$10</span></button>
+        <div class="group-lbl">Something else</div>
+        <button type="button" class="tile" data-id="Other" aria-pressed="false"><span class="box"></span><span class="txt"><b>Other</b><span>Tell me what you want</span></span><span class="pr">Ask</span></button>
       </div>
-      <div class="total"><span id="sumLbl">Cut · about 30 min</span><b id="sum">$25</b></div>
+      <div class="f" id="otherWrap" hidden><label for="other">What do you want?</label><input id="other" maxlength="300" placeholder="e.g. design, freestyle part, kids cut"></div>
+      <div class="total"><span id="sumLbl">Men's haircut · about 30 min</span><b id="sum">$25</b></div>
     </section>
 
     <section class="card" aria-labelledby="h2">
       <h2 id="h2"><span class="n">2</span>Your info</h2>
       <div class="f"><label for="name">Name</label><input id="name" autocomplete="name" maxlength="80" required></div>
-      <div class="f"><label for="phone">Phone number</label><input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30" placeholder="(732) 555-0123" required></div>
-      <div class="f"><label>Best times for you</label>
-        <div class="chips" id="when">
+      <div class="f"><label for="ig">Instagram handle</label><div class="at"><span>@</span><input id="ig" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="yourhandle" required></div></div>
+      <div class="f"><span class="lbl" id="heardLbl">Where did you hear about me?</span>
+        <div class="chips" id="heard" role="radiogroup" aria-labelledby="heardLbl">
+          <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Instagram</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">A friend</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">TikTok</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Saw someone's cut</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Other</button>
+        </div>
+      </div>
+      <div class="f"><span class="lbl" id="whenLbl">Best times for you</span>
+        <div class="chips" id="when" aria-labelledby="whenLbl">
           <button type="button" class="chip" aria-pressed="false">Weekdays</button>
           <button type="button" class="chip" aria-pressed="false">Weekends</button>
           <button type="button" class="chip" aria-pressed="false">Mornings</button>
@@ -113,14 +152,14 @@ footer a{color:inherit}
           <button type="button" class="chip" aria-pressed="false">Evenings</button>
         </div>
       </div>
-      <div class="f"><label for="notes">Anything else? <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)">(optional)</span></label><textarea id="notes" maxlength="400" placeholder="e.g. low taper, free after 3 on Thursday"></textarea></div>
+      <div class="f"><label for="notes">Best days or anything else <span class="opt">(optional)</span></label><textarea id="notes" maxlength="400" placeholder="e.g. free after 3 on Thursday"></textarea></div>
       <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" tabindex="-1" autocomplete="off"></div>
     </section>
 
     <div style="display:grid;gap:10px">
       <div class="err" id="err" role="alert" hidden></div>
       <button class="send" id="sendBtn" type="submit">Send booking request</button>
-      <p class="fine">No time slots to pick. I'll text you to lock in a time.</p>
+      <p class="fine">No time slots to pick. I'll DM you on Instagram to lock in a time.</p>
     </div>
   </form>
 
@@ -131,64 +170,109 @@ footer a{color:inherit}
     <button type="button" class="tag" id="again" style="justify-self:center;cursor:pointer;margin-top:10px">Book for someone else</button>
   </section>
 
-  <footer>SMN Cutz · <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">Instagram</a></footer>
+  <footer>SMN Cutz · Jersey · <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">Instagram</a></footer>
 </main>
+<div id="lb"></div>
 
 <script>
 (function(){
 "use strict";
 const $ = s => document.querySelector(s);
-const picks = new Set(["Cut"]);
-const MENU = { Cut:{price:25, mins:30}, Beard:{price:10, alone:15, mins:15}, Eyebrows:{price:5, alone:5, mins:10} };
+const ORDER = ["Haircut","Eyebrows","Beard","Other"];
+const NAMES = { Haircut:"Men's haircut", Eyebrows:"Eyebrows", Beard:"Beard", Other:"Other" };
+const MENU = { Haircut:{price:25, mins:30}, Beard:{price:10, alone:15, mins:15}, Eyebrows:{price:5, alone:5, mins:10}, Other:{price:0, mins:0} };
+const picks = new Set(["Haircut"]);
+
 function update(){
-  const cut = picks.has("Cut");
+  const cut = picks.has("Haircut");
   let total = 0, mins = 0;
-  for (const p of picks){ const m = MENU[p]; total += (cut || p==="Cut") ? m.price : (m.alone ?? m.price); mins += m.mins; }
-  $("#sum").textContent = "$"+total;
-  const names = ["Cut","Beard","Eyebrows"].filter(p=>picks.has(p));
-  $("#sumLbl").textContent = (names.length ? names.join(" + ") : "Nothing picked") + (names.length ? " · about "+Math.max(15,mins)+" min" : "");
-  document.querySelector('[data-p="beard"]').textContent = cut ? "+$10" : "$15";
-  document.querySelector('[data-p="brows"]').textContent = cut ? "+$5" : "$5";
+  for (const p of picks){ const m = MENU[p]; total += (cut || p==="Haircut") ? m.price : (m.alone ?? m.price); mins += m.mins; }
+  const names = ORDER.filter(p=>picks.has(p)).map(p=>NAMES[p]);
+  const onlyOther = picks.size===1 && picks.has("Other");
+  $("#sum").textContent = onlyOther ? "Ask" : "$"+total+(picks.has("Other")?"+":"");
+  $("#sumLbl").textContent = names.length ? names.join(" + ") + (mins ? " · about "+Math.max(15,mins)+" min" : "") : "Nothing picked yet";
+  document.querySelector('[data-p="Beard"]').textContent = cut ? "+$10" : "$15";
+  document.querySelector('[data-p="Eyebrows"]').textContent = cut ? "+$5" : "$5";
+  $("#otherWrap").hidden = !picks.has("Other");
 }
 $("#tiles").addEventListener("click", e => {
   const t = e.target.closest(".tile"); if (!t) return;
   const id = t.dataset.id, on = t.getAttribute("aria-pressed")!=="true";
-  t.setAttribute("aria-pressed", String(on)); on ? picks.add(id) : picks.delete(id); update();
+  t.setAttribute("aria-pressed", String(on)); on ? picks.add(id) : picks.delete(id);
+  update(); if (id==="Other" && on) $("#other").focus();
 });
 $("#when").addEventListener("click", e => {
   const c = e.target.closest(".chip"); if (!c) return;
   c.setAttribute("aria-pressed", String(c.getAttribute("aria-pressed")!=="true"));
 });
+$("#heard").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  const was = c.getAttribute("aria-pressed")==="true";
+  document.querySelectorAll("#heard .chip").forEach(x=>{ x.setAttribute("aria-pressed","false"); x.setAttribute("aria-checked","false"); });
+  if (!was){ c.setAttribute("aria-pressed","true"); c.setAttribute("aria-checked","true"); }
+});
 update();
+$("#ig").addEventListener("input", e => { const v = e.target.value; if (v.startsWith("@")) e.target.value = v.replace(/^@+/,""); });
 
 let sb = null;
 try { sb = window.supabase.createClient(window.SMN.url, window.SMN.key, { auth:{ persistSession:false } }); } catch(_){}
 
+/* portfolio */
+async function loadPortfolio(){
+  if (!sb){ $("#pfEmpty").hidden = false; return; }
+  const { data, error } = await sb.storage.from("portfolio").list("", { limit:30, sortBy:{ column:"created_at", order:"desc" } });
+  const files = (data||[]).filter(f => f.name && !f.name.startsWith(".") && f.id);
+  if (error || !files.length){ $("#pfEmpty").hidden = false; return; }
+  const pf = $("#pf");
+  files.forEach(f => {
+    const url = sb.storage.from("portfolio").getPublicUrl(f.name).data.publicUrl;
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label","View cut");
+    const img = document.createElement("img"); img.loading = "lazy"; img.alt = "Cut by SMN Cutz"; img.src = url;
+    b.appendChild(img); b.addEventListener("click", () => openLb(url)); pf.appendChild(b);
+  });
+}
+function openLb(url){
+  const lb = $("#lb");
+  lb.innerHTML = '<div class="lb" role="dialog" aria-label="Photo"><img alt="Cut by SMN Cutz"><button type="button">Close</button></div>';
+  lb.querySelector("img").src = url;
+  lb.querySelector(".lb").addEventListener("click", e => { if (e.target.tagName!=="IMG") lb.innerHTML = ""; });
+}
+document.addEventListener("keydown", e => { if (e.key==="Escape") $("#lb").innerHTML = ""; });
+loadPortfolio();
+
+/* booking */
 function showErr(msg){ const el = $("#err"); el.textContent = msg; el.hidden = !msg; }
 $("#bookForm").addEventListener("submit", async e => {
   e.preventDefault(); showErr("");
   if ($("#website").value) return;                       // bots fill hidden fields
-  const name = $("#name").value.trim(), phone = $("#phone").value.trim();
+  const name = $("#name").value.trim();
+  const ig = $("#ig").value.trim().replace(/^@+/,"").replace(/^https?:\/\/(www\.)?instagram\.com\//i,"").replace(/[/?#].*$/,"");
+  const other = $("#other").value.trim();
   if (!picks.size) return showErr("Pick at least one thing you want.");
-  if (!name) { $("#name").focus(); return showErr("Add your name so I know who's coming."); }
-  if (phone.replace(/\D/g,"").length < 10) { $("#phone").focus(); return showErr("Add a phone number with area code so I can text you."); }
-  const when = [...document.querySelectorAll("#when .chip[aria-pressed=true]")].map(c=>c.textContent);
+  if (picks.has("Other") && !other){ $("#other").focus(); return showErr("Tell me what you want for \"Other\"."); }
+  if (!name){ $("#name").focus(); return showErr("Add your name so I know who's coming."); }
+  if (!/^[A-Za-z0-9._]{1,30}$/.test(ig)){ $("#ig").focus(); return showErr("Add your Instagram handle so I can DM you a time."); }
+  const heard = (document.querySelector('#heard .chip[aria-pressed="true"]')||{}).textContent || "";
+  const when = [...document.querySelectorAll('#when .chip[aria-pressed="true"]')].map(c=>c.textContent);
   const notes = [when.length ? "Best: "+when.join(", ") : "", $("#notes").value.trim()].filter(Boolean).join(" · ").slice(0,500);
   if (!sb) return showErr("Booking isn't working right now. DM @smncutz on Instagram instead.");
   const btn = $("#sendBtn"); btn.disabled = true; btn.textContent = "Sending…";
-  const { error } = await sb.from("requests").insert({ name:name.slice(0,80), phone:phone.slice(0,30), services:["Cut","Beard","Eyebrows"].filter(p=>picks.has(p)), notes });
+  const { error } = await sb.from("requests").insert({
+    name:name.slice(0,80), instagram:ig.slice(0,40), heard_from:heard.slice(0,60),
+    services:ORDER.filter(p=>picks.has(p)), other_request:picks.has("Other") ? other.slice(0,300) : "", notes
+  });
   btn.disabled = false; btn.textContent = "Send booking request";
   if (error) return showErr("That didn't go through. Try again, or DM @smncutz on Instagram.");
-  $("#bookForm").hidden = true; $("#done").hidden = false;
+  $("#bookForm").hidden = true; $("#work").hidden = true; $("#done").hidden = false;
   $("#doneTitle").textContent = "Got it, "+name.split(/\s+/)[0]+"!";
-  $("#doneMsg").textContent = "I'll text you at "+phone+" to lock in a time.";
-  window.scrollTo({top:0, behavior:"smooth"});
+  $("#doneMsg").textContent = "I'll DM you at @"+ig+" to lock in a time.";
+  window.scrollTo({top:0});
 });
 $("#again").addEventListener("click", () => {
-  $("#bookForm").reset(); picks.clear(); picks.add("Cut");
-  document.querySelectorAll(".tile").forEach(t=>t.setAttribute("aria-pressed", String(t.dataset.id==="Cut")));
-  document.querySelectorAll("#when .chip").forEach(c=>c.setAttribute("aria-pressed","false"));
-  update(); $("#done").hidden = true; $("#bookForm").hidden = false;
+  $("#bookForm").reset(); picks.clear(); picks.add("Haircut");
+  document.querySelectorAll(".tile").forEach(t=>t.setAttribute("aria-pressed", String(t.dataset.id==="Haircut")));
+  document.querySelectorAll("#when .chip, #heard .chip").forEach(c=>{ c.setAttribute("aria-pressed","false"); if (c.hasAttribute("aria-checked")) c.setAttribute("aria-checked","false"); });
+  update(); $("#done").hidden = true; $("#bookForm").hidden = false; $("#work").hidden = false;
 });
 })();
 </script>
