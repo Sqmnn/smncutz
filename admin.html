@@ -750,7 +750,7 @@ function bookingModal(id, preset={}){
       const ref = id ? S.db.collection("bookings").doc(id) : S.db.collection("bookings").doc();
       await ref.set(body);
       if (preset.reqKey) await S.db.collection("requests").doc(preset.reqKey).set({status:"scheduled", bookingId:ref.id, at:new Date().toISOString()});
-      closeModal(); toast((id?"Saved ":"Booked ")+body.clientName+" · "+fmtShort(body.date)+(body.time?" "+fmtTime(body.time):""));
+      closeModal(); if (!id) confetti(); toast((id?"Saved ":"Booked ")+body.clientName+" · "+fmtShort(body.date)+(body.time?" "+fmtTime(body.time):""));
       const changed = !id || ["clientId","clientName","date","time","service","mins","status"].some(k=>b[k]!==body[k]) || b.calError || !b.calEventId;
     } catch(err){ btn.disabled = false; showErr("bErr", err); }
   };
@@ -999,7 +999,7 @@ async function loadAll(){
   S.requests = r.data.map(x=>({ key:x.id, name:x.name, phone:x.phone||"", ig:x.instagram||"", heard:x.heard_from||"", other:x.other_request||"", wants:(x.services||[]).join(", "), notes:x.notes||"", at:Date.parse(x.created_at)||0 }));
   S.handled = new Set(r.data.filter(x=>x.status!=="new").map(x=>x.id));
   S.gotC = S.gotB = true;
-  if (before){ const fresh = pendingRequests().filter(x=>!before.has(x.key)); if (fresh.length) toast(fresh.length===1 ? "New booking request from "+fresh[0].name : fresh.length+" new booking requests", 5000); }
+  if (before){ const fresh = pendingRequests().filter(x=>!before.has(x.key)); if (fresh.length){ confetti(); toast(fresh.length===1 ? "New booking request from "+fresh[0].name : fresh.length+" new booking requests", 5000); } }
   render(); if (S.open) renderSheet();
 }
 let reloadTimer = null;
