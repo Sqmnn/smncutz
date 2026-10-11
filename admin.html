@@ -101,7 +101,7 @@ main{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 100px
 .paidbtn{background:var(--ok);border-color:var(--ok);color:var(--surface)}
 .unpaidbtn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.ok{background:var(--ok);border-color:var(--ok);color:var(--surface)}
-.danger-t{color:var(--accent)}
+.btn.no{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .pill.confirmed{background:var(--ok-soft);color:var(--ok)}
 .pill.declined{background:var(--surface-2);color:var(--ink-3)}
 .owed{color:var(--accent);font-weight:600}
@@ -411,7 +411,7 @@ function apptRow(b, opts={}){
   let right = '<span class="price">'+(b.price?money(b.price):"")+'</span>';
   if (b.source==="online"||b.source==="form") right = '<span class="pill online">Online</span>' + right;
   if (b.status==="booked"){
-    right += '<span class="pill booked">Pending</span><button class="btn small ok" data-act="confirm" data-id="'+b.id+'">Confirm</button><button class="btn small ghost danger-t" data-act="decline" data-id="'+b.id+'">Decline</button>';
+    right += '<span class="pill booked">Pending</span><button class="btn small ok" data-act="confirm" data-id="'+b.id+'">Confirm</button><button class="btn small no" data-act="decline" data-id="'+b.id+'">Decline</button>';
   } else if (b.status==="confirmed"){
     right += '<span class="pill confirmed">Confirmed</span><button class="btn small" data-act="complete" data-id="'+b.id+'">Complete</button>';
   } else if (b.status==="done"){
@@ -505,7 +505,7 @@ function viewToday(){
   const due = dueList();
 
   let h = '<div class="stats">'+
-    '<div class="stat"><div class="k">This week</div><div class="v">'+chair.length+'</div><div class="s">'+(pending.length?pending.length+' waiting to confirm':'confirmed cuts')+'</div></div>'+
+    '<div class="stat"><div class="k">Coming up</div><div class="v">'+chair.length+'</div><div class="s">'+(pending.length?pending.length+' waiting to confirm':'confirmed cuts')+'</div></div>'+
     '<div class="stat"><div class="k">Earned · '+esc(parse(TODAY).toLocaleDateString(undefined,{month:"short"}))+'</div><div class="v money-v">'+money(earned)+'</div><div class="s">'+(owed?'<span class="owed">'+money(owed)+' not paid yet</span>':'all paid up')+'</div></div>'+
     '<div class="stat"><div class="k">Due for a cut</div><div class="v">'+due.length+'</div><div class="s">no booking yet</div></div>'+
     '<div class="stat"><div class="k">Cuts this month</div><div class="v">'+doneMonth.length+'</div><div class="s">completed</div></div></div>';
@@ -515,8 +515,8 @@ function viewToday(){
     h += '<div class="sec-h" style="margin-top:22px"><h2>Waiting to confirm <span class="count">'+pending.length+'</span></h2><span class="meta">confirm or decline</span></div><div class="panel">';
     h += pending.map(b=>apptRow(b,{dateCol:true})).join("") + '</div>';
   }
-  h += '<div class="sec-h" style="margin-top:22px"><h2>This week\'s chair</h2><span class="meta">'+esc(fmtShort(TODAY))+' – '+esc(fmtShort(weekEnd))+'</span></div><div class="panel">';
-  h += chair.length ? chair.map(b=>apptRow(b,{dateCol:true})).join("") : '<div class="empty"><b>Nothing confirmed this week</b>Confirmed bookings show up here, soonest first.</div>';
+  h += '<div class="sec-h" style="margin-top:22px"><h2>Coming up</h2><span class="meta">'+esc(fmtShort(TODAY))+' – '+esc(fmtShort(weekEnd))+'</span></div><div class="panel">';
+  h += chair.length ? chair.map(b=>apptRow(b,{dateCol:true})).join("") : '<div class="empty"><b>Nothing coming up this week</b>Confirmed bookings show up here, soonest first.</div>';
   if (later) h += '<div class="more"><button class="btn small ghost" data-act="go" data-view="bookings">'+later+' more confirmed after this week ›</button></div>';
   h += '</div>';
   h += '<div class="sec-h" style="margin-top:22px"><h2>Completed</h2><span class="meta">'+(unpaid.length?'<span class="owed">'+unpaid.length+' not paid</span>':'tap Paid when they pay')+'</span></div><div class="panel">';
@@ -818,7 +818,7 @@ document.addEventListener("click", async e => {
     case "wk": { const n = +t.dataset.n; S.week = n===0 ? monday(TODAY) : addDays(S.week,n); render(); break; }
     case "done":
     case "complete": try { await S.db.collection("bookings").doc(id).update({status:"done", paid:false}); toast("Completed. Tap Mark paid when they pay."); } catch(err){ toast(sqlHint(err)); } break;
-    case "confirm": try { await S.db.collection("bookings").doc(id).update({status:"confirmed"}); toast("Confirmed. It's on this week's chair."); } catch(err){ toast(sqlHint(err)); } break;
+    case "confirm": try { await S.db.collection("bookings").doc(id).update({status:"confirmed"}); toast("Confirmed. It's under Coming up."); } catch(err){ toast(sqlHint(err)); } break;
     case "decline": { if (!arm(t,"Tap again to decline")) return; try { await S.db.collection("bookings").doc(id).update({status:"declined"}); toast("Declined"); } catch(err){ toast(sqlHint(err)); } break; }
     case "pay": try { await S.db.collection("bookings").doc(id).update({paid:true}); toast("Marked paid"); } catch(err){ toast(sqlHint(err)); } break;
     case "unpay": try { await S.db.collection("bookings").doc(id).update({paid:false}); toast("Marked not paid"); } catch(err){ toast(sqlHint(err)); } break;
