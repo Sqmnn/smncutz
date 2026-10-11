@@ -83,16 +83,29 @@ main{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 100px
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 
 /* appointment rows */
-.appt{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.appt{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.appt .t{flex:0 0 64px}
+.appt .who{flex:1 1 170px}
+.appt .right{margin-left:auto}
 .appt:first-child{border-top:0}
 .appt .t{font:500 15px var(--f-mono);font-variant-numeric:tabular-nums}
 .appt .who{min-width:0}
 .appt .who b{font-weight:600;cursor:pointer}
 .appt .who b:hover{text-decoration:underline}
-.appt .svc{color:var(--ink-2);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appt .svc{color:var(--ink-2);font-size:13px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .appt .right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .appt.is-done .t,.appt.is-cancelled .t,.appt.is-no_show .t{color:var(--ink-3)}
-.appt.is-cancelled .who b{text-decoration:line-through;color:var(--ink-3)}
+.appt.is-cancelled .who b,.appt.is-declined .who b{text-decoration:line-through;color:var(--ink-3)}
+.appt.paid{background:var(--ok-soft);box-shadow:inset 4px 0 0 var(--ok)}
+.appt.unpaid{background:var(--accent-soft);box-shadow:inset 4px 0 0 var(--accent)}
+.paidbtn{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.unpaidbtn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.danger-t{color:var(--accent)}
+.pill.confirmed{background:var(--ok-soft);color:var(--ok)}
+.pill.declined{background:var(--surface-2);color:var(--ink-3)}
+.owed{color:var(--accent);font-weight:600}
+.more{padding:8px 14px;border-top:1px solid var(--line)}
 .pill{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
 .pill.booked{background:var(--navy-soft);color:var(--navy)}
 .pill.done{background:var(--ok-soft);color:var(--ok)}
@@ -185,7 +198,7 @@ a.btn{text-decoration:none;color:inherit}
 .photo .d{position:absolute;left:0;right:0;bottom:0;font-size:11px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:10px 6px 4px;text-align:left}
 .upload{aspect-ratio:1;border:1.5px dashed var(--line);border-radius:8px;display:grid;place-items:center;text-align:center;color:var(--ink-2);font-size:13px;cursor:pointer;background:var(--surface)}
 .upload:hover{border-color:var(--ink-3)}
-.hist .appt{grid-template-columns:96px minmax(0,1fr) auto}
+.hist .appt .t{flex-basis:96px}
 
 /* lightbox */
 .lb{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
@@ -223,9 +236,9 @@ a.btn{text-decoration:none;color:inherit}
   .brand h1{font-size:24px}
   .stats{grid-template-columns:repeat(2,1fr)}
   .cols{grid-template-columns:minmax(0,1fr)}
-  .appt{grid-template-columns:52px minmax(0,1fr);}
-  .appt .right{grid-column:1 / -1;justify-content:flex-start;padding-left:64px}
-  .hist .appt{grid-template-columns:80px minmax(0,1fr)}
+  .appt .t{flex-basis:52px}
+  .appt .right{flex-basis:100%;justify-content:flex-start;padding-left:64px;margin-left:0}
+  .hist .appt .t{flex-basis:80px}
   .hist .appt .right{padding-left:92px}
   .two{grid-template-columns:1fr}
   .minis{grid-template-columns:repeat(3,1fr)}
@@ -340,7 +353,7 @@ function pickFromText(t){
 function priceFor(set){ const c = set.has("cut"); return MENU.reduce((s,m)=>set.has(m.id) ? s + (c||m.id==="cut" ? m.price : (m.alone ?? m.price)) : s, 0); }
 function minsFor(set){ return Math.max(15, MENU.reduce((s,m)=>set.has(m.id) ? s+m.mins : s, 0)); }
 function labelFor(set){ const n = MENU.filter(m=>set.has(m.id)).map(m=>m.name); return (!set.has("cut") && n.length===1 && n[0]!=="Other") ? n[0]+" only" : n.join(" + "); }
-const STATUS = {booked:"Booked",done:"Done",no_show:"No-show",cancelled:"Cancelled"};
+const STATUS = {booked:"Pending",confirmed:"Confirmed",done:"Completed",declined:"Declined",no_show:"No-show",cancelled:"Cancelled"};
 
 /* ---------- state ---------- */
 const S = { clients:new Map(), bookings:new Map(), settings:{}, view:"today", week:monday(TODAY), q:"", sort:"due",
@@ -359,8 +372,8 @@ function statsFor(c){
   if (dates.length>=2){ let t=0; for(let i=1;i<dates.length;i++) t+=diff(dates[i-1],dates[i]); avg = Math.round(t/(dates.length-1)); }
   const cycle = c.cycleWeeks ? Math.round(c.cycleWeeks*7) : avg;
   const last = dates.length ? dates[dates.length-1] : null;
-  const next = all.find(b=>b.status==="booked" && b.date>=TODAY) || null;
-  const spent = done.reduce((s,b)=>s+(+b.price||0),0);
+  const next = all.find(b=>(b.status==="booked"||b.status==="confirmed") && b.date>=TODAY) || null;
+  const spent = done.filter(b=>b.paid!==false).reduce((s,b)=>s+(+b.price||0),0);
   let dueIn = null;
   if (last){ const cyc = cycle || 28; dueIn = diff(TODAY, addDays(last,cyc)); }
   const noShows = all.filter(b=>b.status==="no_show").length;
@@ -394,17 +407,23 @@ function render(){
 }
 
 function apptRow(b, opts={}){
-  const c = S.clients.get(b.clientId);
-  const past = b.date < TODAY || (b.date===TODAY);
+  const live = b.status==="booked" || b.status==="confirmed";
   let right = '<span class="price">'+(b.price?money(b.price):"")+'</span>';
-  if (b.status==="booked" && past) right += '<button class="btn small" data-act="done" data-id="'+b.id+'">Mark done</button>';
-  if (b.status!=="booked" || !past) right += '<span class="pill '+b.status+'">'+STATUS[b.status]+'</span>';
   if (b.source==="online"||b.source==="form") right = '<span class="pill online">Online</span>' + right;
-  if (b.status==="booked" && b.date>=TODAY) right += '<a class="btn small ghost" href="'+esc(gcalUrl(b))+'" target="_blank" rel="noopener" title="Add to Google Calendar">+ Calendar</a>';
+  if (b.status==="booked"){
+    right += '<span class="pill booked">Pending</span><button class="btn small ok" data-act="confirm" data-id="'+b.id+'">Confirm</button><button class="btn small ghost danger-t" data-act="decline" data-id="'+b.id+'">Decline</button>';
+  } else if (b.status==="confirmed"){
+    right += '<span class="pill confirmed">Confirmed</span><button class="btn small" data-act="complete" data-id="'+b.id+'">Complete</button>';
+  } else if (b.status==="done"){
+    right += b.paid ? '<button class="btn small paidbtn" data-act="unpay" data-id="'+b.id+'" title="Tap to mark not paid">Paid ✓</button>'
+                    : '<button class="btn small unpaidbtn" data-act="pay" data-id="'+b.id+'" title="Tap when they pay">Not paid · Mark paid</button>';
+  } else right += '<span class="pill '+b.status+'">'+(STATUS[b.status]||b.status)+'</span>';
+  if (live && b.date>=TODAY) right += '<a class="btn small ghost" href="'+esc(gcalUrl(b))+'" target="_blank" rel="noopener" title="Add to Google Calendar">+ Calendar</a>';
   right += '<button class="btn small ghost" data-act="edit-b" data-id="'+b.id+'" aria-label="Edit booking">Edit</button>';
-  const first = opts.dateCol ? '<span class="t" style="font-size:13px">'+esc(fmtShort(b.date))+'<br><span style="color:var(--ink-3)">'+fmtTime(b.time)+'</span></span>' : '<span class="t">'+fmtTime(b.time)+'</span>';
-  return '<div class="appt is-'+b.status+'">'+first+
-    '<div class="who">'+(opts.hideName?'<div>'+esc(b.service||"Cut")+'</div>':'<b data-act="open" data-id="'+esc(b.clientId||"")+'">'+esc(clientName(b.clientId,b.clientName))+'</b>')+
+  const first = opts.dateCol ? '<span class="t" style="font-size:13px">'+esc(b.date===TODAY?"Today":fmtShort(b.date))+'<br><span style="color:var(--ink-3)">'+fmtTime(b.time)+'</span></span>' : '<span class="t">'+fmtTime(b.time)+'</span>';
+  const cls = 'appt is-'+b.status+(b.status==="done"?(b.paid?" paid":" unpaid"):"");
+  return '<div class="'+cls+'">'+first+
+    '<div class="who">'+(opts.hideName?'<div>'+esc(b.service||"Haircut")+'</div>':'<b data-act="open" data-id="'+esc(b.clientId||"")+'">'+esc(clientName(b.clientId,b.clientName))+'</b>')+
     '<div class="svc">'+(opts.hideName?esc(b.notes||""):esc([b.service,b.notes].filter(Boolean).join(" · ")))+'</div></div>'+
     '<div class="right">'+right+'</div></div>';
 }
@@ -445,6 +464,7 @@ function gcalUrl(b){
   return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(calTitle(b))+"&dates="+dates+"&ctz="+encodeURIComponent(tz)+"&details="+encodeURIComponent(details);
 }
 function removeCal(){}
+function sqlHint(err){ return /column|violates|check/i.test((err&&err.message)||"") ? "Run the newest setup.sql in Supabase first, then try again." : "Couldn't update. Try again."; }
 
 /* ---------- photos (private storage, signed links) ---------- */
 const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
@@ -470,27 +490,37 @@ function dueList(){
 }
 
 function viewToday(){
-  const todays = [...S.bookings.values()].filter(b=>b.date===TODAY).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
-  const active = todays.filter(b=>b.status!=="cancelled");
-  const doneToday = todays.filter(b=>b.status==="done");
-  const took = doneToday.reduce((s,b)=>s+(+b.price||0),0);
-  const expected = active.filter(b=>b.status!=="no_show").reduce((s,b)=>s+(+b.price||0),0);
+  const all = [...S.bookings.values()];
+  const byTime = (a,b)=>(a.date+(a.time||"99")).localeCompare(b.date+(b.time||"99"));
+  const weekEnd = addDays(TODAY,6);
+  const pending = all.filter(b=>b.status==="booked").sort(byTime);
+  const chair = all.filter(b=>b.status==="confirmed" && b.date<=weekEnd).sort(byTime);
+  const later = all.filter(b=>b.status==="confirmed" && b.date>weekEnd).length;
+  const completed = all.filter(b=>b.status==="done").sort((a,b)=>byTime(b,a));
   const month = TODAY.slice(0,7);
-  const monthCuts = [...S.bookings.values()].filter(b=>b.status==="done" && b.date.startsWith(month)).length;
+  const doneMonth = completed.filter(b=>b.date.startsWith(month));
+  const earned = doneMonth.filter(b=>b.paid).reduce((s,b)=>s+(+b.price||0),0);
+  const unpaid = completed.filter(b=>!b.paid);
+  const owed = unpaid.reduce((s,b)=>s+(+b.price||0),0);
   const due = dueList();
-  const upcoming = [...S.bookings.values()].filter(b=>b.status==="booked" && b.date>TODAY).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,6);
 
   let h = '<div class="stats">'+
-    '<div class="stat"><div class="k">Today</div><div class="v">'+active.length+'</div><div class="s">'+doneToday.length+' done</div></div>'+
-    '<div class="stat"><div class="k">Takings</div><div class="v">'+money(took)+'</div><div class="s">of '+money(expected)+' booked</div></div>'+
+    '<div class="stat"><div class="k">This week</div><div class="v">'+chair.length+'</div><div class="s">'+(pending.length?pending.length+' waiting to confirm':'confirmed cuts')+'</div></div>'+
+    '<div class="stat"><div class="k">Earned · '+esc(parse(TODAY).toLocaleDateString(undefined,{month:"short"}))+'</div><div class="v money-v">'+money(earned)+'</div><div class="s">'+(owed?'<span class="owed">'+money(owed)+' not paid yet</span>':'all paid up')+'</div></div>'+
     '<div class="stat"><div class="k">Due for a cut</div><div class="v">'+due.length+'</div><div class="s">no booking yet</div></div>'+
-    '<div class="stat"><div class="k">Cuts this month</div><div class="v">'+monthCuts+'</div><div class="s">'+parse(TODAY).toLocaleDateString(undefined,{month:"long"})+'</div></div></div>';
+    '<div class="stat"><div class="k">Cuts this month</div><div class="v">'+doneMonth.length+'</div><div class="s">completed</div></div></div>';
 
-  h += '<div class="cols"><section>' + requestsHtml() + '<div class="sec-h" style="margin-top:22px"><h2>Today\'s chair</h2><span class="meta">'+esc(fmtDay(TODAY))+'</span></div><div class="panel">';
-  h += todays.length ? todays.map(b=>apptRow(b)).join("") : '<div class="empty"><b>Nothing booked today</b>Tap “+ Booking” to add someone to the chair.</div>';
+  h += '<div class="cols"><section>' + requestsHtml();
+  if (pending.length){
+    h += '<div class="sec-h" style="margin-top:22px"><h2>Waiting to confirm <span class="count">'+pending.length+'</span></h2><span class="meta">confirm or decline</span></div><div class="panel">';
+    h += pending.map(b=>apptRow(b,{dateCol:true})).join("") + '</div>';
+  }
+  h += '<div class="sec-h" style="margin-top:22px"><h2>This week\'s chair</h2><span class="meta">'+esc(fmtShort(TODAY))+' – '+esc(fmtShort(weekEnd))+'</span></div><div class="panel">';
+  h += chair.length ? chair.map(b=>apptRow(b,{dateCol:true})).join("") : '<div class="empty"><b>Nothing confirmed this week</b>Confirmed bookings show up here, soonest first.</div>';
+  if (later) h += '<div class="more"><button class="btn small ghost" data-act="go" data-view="bookings">'+later+' more confirmed after this week ›</button></div>';
   h += '</div>';
-  h += '<div class="sec-h" style="margin-top:22px"><h2>Coming up</h2><button class="btn small ghost" data-act="go" data-view="bookings">See the week</button></div><div class="panel">';
-  h += upcoming.length ? upcoming.map(b=>apptRow(b,{dateCol:true})).join("") : '<div class="empty">No upcoming bookings.</div>';
+  h += '<div class="sec-h" style="margin-top:22px"><h2>Completed</h2><span class="meta">'+(unpaid.length?'<span class="owed">'+unpaid.length+' not paid</span>':'tap Paid when they pay')+'</span></div><div class="panel">';
+  h += completed.length ? completed.slice(0,12).map(b=>apptRow(b,{dateCol:true})).join("") : '<div class="empty">Finished cuts land here. Green means paid, red means not paid yet.</div>';
   h += '</div></section>';
 
   h += '<section>' + bookingCard() + '<div class="sec-h"><h2>Due for a cut</h2><span class="meta">based on how often they come</span></div><div class="panel">';
@@ -512,7 +542,7 @@ function viewBookings(){
   for (let i=0;i<7;i++){
     const d = addDays(start,i);
     const list = [...S.bookings.values()].filter(b=>b.date===d).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
-    const val = list.filter(b=>b.status!=="cancelled"&&b.status!=="no_show").reduce((s,b)=>s+(+b.price||0),0);
+    const val = list.filter(b=>!["cancelled","no_show","declined"].includes(b.status)).reduce((s,b)=>s+(+b.price||0),0);
     h += '<div class="day'+(d===TODAY?" today":"")+'"><h3>'+esc(fmtDay(d))+(d===TODAY?" · Today":"")+
       (list.length?' <span class="c">'+list.length+' booking'+(list.length>1?"s":"")+' · '+money(val)+'</span>':'')+
       ' <button class="btn small ghost" data-act="book-on" data-date="'+d+'" style="margin-left:auto">+ Add</button></h3>';
@@ -654,6 +684,7 @@ function bookingModal(id, preset={}){
     '<div class="two">'+field("bDate","Date",'<input id="bDate" type="date" required value="'+esc(b.date)+'">')+field("bTime","Time",'<input id="bTime" type="time" step="900" value="'+esc(b.time)+'">')+'</div>'+
     '<div class="f"><label>Service <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)">· tap to add</span></label><div class="chips" id="svcChips">'+MENU.map(m=>'<button type="button" class="chip" data-id="'+m.id+'" aria-pressed="'+picks.has(m.id)+'">'+esc(m.name)+'</button>').join("")+'</div></div>'+
     '<div class="two">'+field("bService","Calendar name",'<input id="bService" value="'+esc(id?b.service:labelFor(picks))+'">')+field("bPrice","Price ($)",'<input id="bPrice" type="number" min="0" step="0.5" inputmode="decimal" value="'+esc(id?b.price:priceFor(picks))+'">')+'</div>'+
+    (id?field("bPaid","Paid?",'<select id="bPaid"><option value="0"'+(b.paid?"":" selected")+'>Not paid</option><option value="1"'+(b.paid?" selected":"")+'>Paid</option></select>'):'')+
     (id?field("bStatus","Status",'<select id="bStatus">'+Object.entries(STATUS).map(([k,v])=>'<option value="'+k+'"'+(b.status===k?" selected":"")+'>'+v+'</option>').join("")+'</select>'):'')+
     field("bNotes","Notes",'<input id="bNotes" autocomplete="off" placeholder="e.g. wants it shorter this time" value="'+esc(b.notes)+'">')+
     '<div class="hint" id="calHint" style="font-size:12px;color:var(--ink-3)"></div>'+
@@ -688,7 +719,7 @@ function bookingModal(id, preset={}){
       const body = Object.assign({}, b, {
         clientId: cid, clientName: clientName(cid, $("#bNewName").value.trim()), date: $("#bDate").value, time: $("#bTime").value,
         service: $("#bService").value.trim() || labelFor(picks), price: parseFloat($("#bPrice").value)||0, mins: minsFor(picks),
-        notes: $("#bNotes").value.trim(), status: id ? $("#bStatus").value : "booked",
+        notes: $("#bNotes").value.trim(), status: id ? $("#bStatus").value : "booked", paid: id ? $("#bPaid").value==="1" : false,
       });
       if (preset.reqKey){ body.source = "form"; body.requestKey = preset.reqKey; }
       delete body.id; delete body.picks; delete body.newName; delete body.newPhone; delete body.newIg; delete body.reqKey;
@@ -785,7 +816,12 @@ document.addEventListener("click", async e => {
     case "close-modal": closeModal(); break;
     case "modal-bg": if (e.target===t) closeModal(); break;
     case "wk": { const n = +t.dataset.n; S.week = n===0 ? monday(TODAY) : addDays(S.week,n); render(); break; }
-    case "done": try { await S.db.collection("bookings").doc(id).update({status:"done"}); toast("Marked done"); } catch(err){ toast("Couldn't update. Try again."); } break;
+    case "done":
+    case "complete": try { await S.db.collection("bookings").doc(id).update({status:"done", paid:false}); toast("Completed. Tap Mark paid when they pay."); } catch(err){ toast(sqlHint(err)); } break;
+    case "confirm": try { await S.db.collection("bookings").doc(id).update({status:"confirmed"}); toast("Confirmed. It's on this week's chair."); } catch(err){ toast(sqlHint(err)); } break;
+    case "decline": { if (!arm(t,"Tap again to decline")) return; try { await S.db.collection("bookings").doc(id).update({status:"declined"}); toast("Declined"); } catch(err){ toast(sqlHint(err)); } break; }
+    case "pay": try { await S.db.collection("bookings").doc(id).update({paid:true}); toast("Marked paid"); } catch(err){ toast(sqlHint(err)); } break;
+    case "unpay": try { await S.db.collection("bookings").doc(id).update({paid:false}); toast("Marked not paid"); } catch(err){ toast(sqlHint(err)); } break;
     case "copy": try { await navigator.clipboard.writeText(t.dataset.v); toast("Number copied"); } catch(_){ toast(t.dataset.v); } break;
     case "lb": lightbox(id); break;
     case "pf-del": {
@@ -889,7 +925,7 @@ const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-400
 const sb = window.supabase.createClient(SMN.url, SMN.key, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
 const TABLES = {
   clients:  {name:"name", phone:"phone", instagram:"instagram", email:"email", cut:"cut", notes:"notes", cycleWeeks:"cycle_weeks", photos:"photos", source:"source", createdAt:"created_at"},
-  bookings: {clientId:"client_id", clientName:"client_name", date:"date", time:"time", service:"service", price:"price", mins:"mins", status:"status", notes:"notes", source:"source", requestKey:"request_id"},
+  bookings: {clientId:"client_id", clientName:"client_name", date:"date", time:"time", service:"service", price:"price", mins:"mins", status:"status", notes:"notes", source:"source", requestKey:"request_id", paid:"paid"},
   requests: {status:"status", bookingId:"booking_id"},
 };
 function toRow(table, obj){ const map = TABLES[table], row = {}; for (const k in obj) if (map[k] && obj[k]!==undefined) row[map[k]] = obj[k]; if (row.date==="") delete row.date; return row; }
