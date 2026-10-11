@@ -471,6 +471,17 @@ function apptRow(b, opts={}){
 /* ---------- booking requests (from the public booking page) ---------- */
 function agoTime(ms){ const m = Math.round((Date.now()-ms)/60000); return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"; }
 function pendingRequests(){ return (S.requests||[]).filter(r=>!S.handled.has(r.key)).sort((a,b)=>b.at-a.at); }
+function igUrl(h){ return "https://www.instagram.com/"+encodeURIComponent(String(h||"").replace(/^@+/,"").trim())+"/"; }
+function fmtPhone(v){
+  const raw = String(v||"").trim(); let d = raw.replace(/\D/g,"");
+  if (d.length===11 && d[0]==="1") d = d.slice(1);
+  if (d.length===10) return "("+d.slice(0,3)+") "+d.slice(3,6)+"-"+d.slice(6);
+  return raw;
+}
+function typePhone(el){
+  let d = el.value.replace(/\D/g,""); if (d.length===11 && d[0]==="1") d = d.slice(1); d = d.slice(0,10);
+  el.value = d.length>6 ? "("+d.slice(0,3)+") "+d.slice(3,6)+"-"+d.slice(6) : d.length>3 ? "("+d.slice(0,3)+") "+d.slice(3) : d;
+}
 function digitsOf(v){ return String(v||"").replace(/\D/g,"").slice(-10); }
 function matchClient(r){
   const all = [...S.clients.values()], lc = v => String(v||"").trim().toLowerCase();
@@ -499,8 +510,8 @@ function requestsHtml(){
   let h = '<div class="sec-h"><h2>New requests'+(pend.length?' <span class="count">'+pend.length+'</span>':'')+'</h2><span class="meta">from your booking page</span></div><div class="panel">';
   if (!pend.length) h += '<div class="empty"><b>No new requests</b>When someone books on your site, they pop up here and you pick the day and time.</div>';
   else h += pend.map(r=>{ const p = pickFromText(r.wants);
-    return '<div class="req"><div class="info"><b>'+esc(r.name)+'</b>'+(r.ig?' <a class="ig" href="https://instagram.com/'+encodeURIComponent(r.ig)+'" target="_blank" rel="noopener">@'+esc(r.ig)+'</a>':'')+
-      '<div>'+esc(labelFor(p))+(p.has("other")&&p.size===1?'':' · '+money(priceFor(p))+(p.has("other")?'+':''))+(r.phone?' · <span class="mono">'+esc(r.phone)+'</span>':'')+'</div>'+
+    return '<div class="req"><div class="info"><b>'+esc(r.name)+'</b>'+(r.ig?' <a class="ig" href="'+esc(igUrl(r.ig))+'" target="_blank" rel="noopener">@'+esc(r.ig)+'</a>':'')+
+      '<div>'+esc(labelFor(p))+(p.has("other")&&p.size===1?'':' · '+money(priceFor(p))+(p.has("other")?'+':''))+(r.phone?' · <span class="mono">'+esc(fmtPhone(r.phone))+'</span>':'')+'</div>'+
       (r.other?'<div class="rn">Other: “'+esc(r.other)+'”</div>':'')+
       (r.notes?'<div class="rn">'+esc(r.notes)+'</div>':'')+
       '<div class="rt">'+(r.at?'asked '+esc(agoTime(r.at)):'')+(r.heard?' · heard from '+esc(r.heard):'')+'</div>'+whoPicker(r)+'</div>'+
@@ -761,7 +772,7 @@ function viewClients(){
       (s.last?'<span class="tag">last '+esc(ago(s.sinceLast))+'</span>':'')+
       '</div></div></button>'+
       '<div class="cacts"><button class="btn small primary" data-act="book-for" data-id="'+c.id+'">Book</button>'+
-      (c.instagram?'<a class="btn small" href="https://ig.me/m/'+encodeURIComponent(c.instagram)+'" target="_blank" rel="noopener">DM</a>':'')+
+      (c.instagram?'<a class="btn small" href="'+esc(igUrl(c.instagram))+'" target="_blank" rel="noopener">DM</a>':'')+
       '<button class="btn small" data-act="edit-c" data-id="'+c.id+'">Edit</button>'+
       '<button class="btn small no" data-act="del-c" data-id="'+c.id+'">Delete</button></div></div>';
   }
@@ -781,8 +792,8 @@ function renderSheet(){
     '<button class="btn small" data-act="edit-c" data-id="'+c.id+'">Edit</button><button class="btn small primary" data-act="book-for" data-id="'+c.id+'">Book</button></div></div>'+
     '<div class="sheet-b">'+
     '<div class="idcard">'+avatar(c,true)+'<div style="min-width:0"><h2>'+esc(c.name)+'</h2><div class="ph">'+
-      (c.instagram?'<a class="btn small" href="https://ig.me/m/'+encodeURIComponent(c.instagram)+'" target="_blank" rel="noopener">DM @'+esc(c.instagram)+'</a>':'')+
-      (c.phone?'<span class="mono" style="font-size:14px">'+esc(c.phone)+'</span><button class="btn small ghost" data-act="copy" data-v="'+esc(c.phone)+'">Copy</button>':'')+
+      (c.instagram?'<a class="btn small" href="'+esc(igUrl(c.instagram))+'" target="_blank" rel="noopener">DM @'+esc(c.instagram)+'</a>':'')+
+      (c.phone?'<span class="mono" style="font-size:14px">'+esc(fmtPhone(c.phone))+'</span><button class="btn small ghost" data-act="copy" data-v="'+esc(c.phone)+'">Copy</button>':'')+
       (!c.phone&&!c.instagram?'<span style="color:var(--ink-3);font-size:14px">No contact saved</span>':'')+
       (s.next?'<span class="pill booked">Next: '+esc(fmtShort(s.next.date))+' '+fmtTime(s.next.time)+'</span>':s.dueIn!=null&&s.dueIn<=3?'<span class="pill due">'+(s.dueIn<0?(-s.dueIn)+' days overdue':'Due soon')+'</span>':'')+
     '</div></div></div>'+
@@ -815,7 +826,7 @@ function clientModal(id){
   $("#modalRoot").innerHTML = '<div class="modal" data-act="modal-bg"><div class="mbox" role="dialog" aria-label="Client"><h2>'+(id?"Edit client":"New client")+'</h2><form class="form" id="cForm">'+
     field("cName","Name",'<input id="cName" required autocomplete="off" value="'+esc(c.name)+'">')+
     '<div class="two">'+field("cIg","Instagram",'<div class="at"><span>@</span><input id="cIg" class="ig-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="handle" value="'+esc(c.instagram)+'"></div>')+
-    field("cPhone","Phone",'<input id="cPhone" type="tel" autocomplete="off" value="'+esc(c.phone)+'">')+'</div>'+
+    field("cPhone","Phone",'<input id="cPhone" type="tel" inputmode="tel" autocomplete="off" placeholder="(732) 555-0123" value="'+esc(fmtPhone(c.phone))+'">')+'</div>'+
     field("cCut","Their cut",'<textarea id="cCut" placeholder="e.g. Low taper, #2 on sides, scissor top, natural neckline">'+esc(c.cut)+'</textarea>')+
     field("cCycle","Usual cycle (weeks)",'<input id="cCycle" type="number" min="0.5" step="0.5" inputmode="decimal" value="'+esc(c.cycleWeeks||"")+'">',"Leave blank and it'll be worked out from their visits.")+
     field("cNotes","Notes",'<textarea id="cNotes" placeholder="Allergies to products, likes a hot towel, talks football…">'+esc(c.notes)+'</textarea>')+
@@ -834,7 +845,7 @@ function clientModal(id){
   $("#cForm").onsubmit = async e => {
     e.preventDefault();
     const body = Object.assign({}, c, {
-      name: $("#cName").value.trim(), phone: $("#cPhone").value.trim(), instagram: $("#cIg").value.trim().replace(/^@+/,""), cut: $("#cCut").value.trim(),
+      name: $("#cName").value.trim(), phone: fmtPhone($("#cPhone").value), instagram: $("#cIg").value.trim().replace(/^@+/,""), cut: $("#cCut").value.trim(),
       cycleWeeks: parseFloat($("#cCycle").value) || null, notes: $("#cNotes").value.trim(),
     });
     delete body.id;
@@ -1108,6 +1119,7 @@ document.addEventListener("submit", async e => {
   }
 });
 document.addEventListener("input", e => {
+  if (e.target.type==="tel") typePhone(e.target);
   if (e.target.classList && e.target.classList.contains("ig-in") && e.target.value.startsWith("@")) e.target.value = e.target.value.replace(/^@+/,"");
   if (e.target.id==="q"){ S.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos,pos); }
 });
