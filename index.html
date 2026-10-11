@@ -361,7 +361,7 @@ $("#bookForm").addEventListener("submit", async e => {
   if (error) return showErr("That didn't go through. Try again, or DM @smncutz on Instagram.");
   $("#bookForm").hidden = true; $("#done").hidden = false;
   $("#doneTitle").textContent = "Got it, "+name.split(/\s+/)[0]+"!";
-  $("#doneMsg").replaceChildren(Object.assign(document.createElement("b"),{textContent:"You're in good hands!"}), document.createElement("br"), "I'll DM you at @"+ig+" to lock in a time.");
+  $("#doneMsg").replaceChildren(Object.assign(document.createElement("b"),{textContent:"You're in good hands!"}), document.createElement("br"), "I'll send you a DM at @"+ig+" to lock in a time!");
   confetti();
   $("#book").scrollIntoView();
 });
