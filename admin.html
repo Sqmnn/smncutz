@@ -170,6 +170,9 @@ a.btn{text-decoration:none;color:inherit}
 .ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column}
 .ccard-main{background:none;border:0;padding:14px 14px 10px;display:flex;gap:12px;text-align:left;align-items:flex-start;width:100%;cursor:pointer;border-radius:var(--r) var(--r) 0 0}
 .ccard .igh{font-weight:500;font-size:13px;color:var(--ink-3)}
+.at{position:relative}
+.at span{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-2);pointer-events:none;font-weight:600}
+.f .at input{padding-left:27px}
 .cacts{display:flex;gap:6px;padding:0 14px 12px;flex-wrap:wrap}
 .cacts .btn.no{margin-left:auto}
 .ccard:hover{border-color:var(--ink-3)}
@@ -680,7 +683,7 @@ function clientModal(id){
   const c = id ? S.clients.get(id) : {};
   $("#modalRoot").innerHTML = '<div class="modal" data-act="modal-bg"><div class="mbox" role="dialog" aria-label="Client"><h2>'+(id?"Edit client":"New client")+'</h2><form class="form" id="cForm">'+
     field("cName","Name",'<input id="cName" required autocomplete="off" value="'+esc(c.name)+'">')+
-    '<div class="two">'+field("cIg","Instagram",'<input id="cIg" autocomplete="off" autocapitalize="off" placeholder="handle" value="'+esc(c.instagram)+'">')+
+    '<div class="two">'+field("cIg","Instagram",'<div class="at"><span>@</span><input id="cIg" class="ig-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="handle" value="'+esc(c.instagram)+'"></div>')+
     field("cPhone","Phone",'<input id="cPhone" type="tel" autocomplete="off" value="'+esc(c.phone)+'">')+'</div>'+
     field("cCut","Their cut",'<textarea id="cCut" placeholder="e.g. Low taper, #2 on sides, scissor top, natural neckline">'+esc(c.cut)+'</textarea>')+
     field("cCycle","Usual cycle (weeks)",'<input id="cCycle" type="number" min="0.5" step="0.5" inputmode="decimal" value="'+esc(c.cycleWeeks||"")+'">',"Leave blank and it'll be worked out from their visits.")+
@@ -714,7 +717,7 @@ function bookingModal(id, preset={}){
   const isNew = !id && !!preset.newName;
   $("#modalRoot").innerHTML = '<div class="modal" data-act="modal-bg"><div class="mbox" role="dialog" aria-label="Booking"><h2>'+(id?"Edit booking":preset.reqKey?"Schedule request":"New booking")+'</h2><form class="form" id="bForm">'+
     field("bClient","Client",'<select id="bClient" required><option value="">Choose a client…</option>'+clients.map(c=>'<option value="'+c.id+'"'+(c.id===b.clientId?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'<option value="__new"'+(isNew?" selected":"")+'>+ New client…</option></select>')+
-    '<div class="two" id="newNameWrap"'+(isNew?"":" hidden")+'>'+field("bNewName","New client name",'<input id="bNewName" autocomplete="off" value="'+esc(preset.newName||"")+'">')+field("bNewIg","Instagram",'<input id="bNewIg" autocomplete="off" autocapitalize="off" placeholder="handle" value="'+esc(preset.newIg||"")+'">')+'</div>'+
+    '<div class="two" id="newNameWrap"'+(isNew?"":" hidden")+'>'+field("bNewName","New client name",'<input id="bNewName" autocomplete="off" value="'+esc(preset.newName||"")+'">')+field("bNewIg","Instagram",'<div class="at"><span>@</span><input id="bNewIg" class="ig-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="handle" value="'+esc(preset.newIg||"")+'"></div>')+'</div>'+
     '<div class="two">'+field("bDate","Date",'<input id="bDate" type="date" required value="'+esc(b.date)+'">')+field("bTime","Time",'<input id="bTime" type="time" step="900" value="'+esc(b.time)+'">')+'</div>'+
     '<div class="f"><label>Service <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)">· tap to add</span></label><div class="chips" id="svcChips">'+MENU.map(m=>'<button type="button" class="chip" data-id="'+m.id+'" aria-pressed="'+picks.has(m.id)+'">'+esc(m.name)+'</button>').join("")+'</div></div>'+
     '<div class="two">'+field("bService","Calendar name",'<input id="bService" value="'+esc(id?b.service:labelFor(picks))+'">')+field("bPrice","Price ($)",'<input id="bPrice" type="number" min="0" step="0.5" inputmode="decimal" value="'+esc(id?b.price:priceFor(picks))+'">')+'</div>'+
@@ -934,6 +937,7 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("input", e => {
+  if (e.target.classList && e.target.classList.contains("ig-in") && e.target.value.startsWith("@")) e.target.value = e.target.value.replace(/^@+/,"");
   if (e.target.id==="q"){ S.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos,pos); }
 });
 document.addEventListener("change", e => {
