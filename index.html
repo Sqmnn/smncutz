@@ -117,6 +117,8 @@ a.tag:hover{border-color:var(--ink-3)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:7px 13px;font-size:14px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.big{padding:10px 22px;font-size:15px;font-weight:600}
+.sub-lbl{font-size:13px;color:var(--ink-2);margin:10px 0 6px}
 .opt{text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)}
 .send{border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:800 24px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;padding:18px;cursor:pointer;width:100%}
 .send:disabled{opacity:.6;cursor:default}
@@ -192,16 +194,21 @@ footer a{color:inherit}
           <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Other</button>
         </div>
       </div>
-      <div class="f"><span class="lbl" id="whenLbl">Best times for you</span>
-        <div class="chips" id="when" aria-labelledby="whenLbl">
-          <button type="button" class="chip" aria-pressed="false">Weekdays</button>
-          <button type="button" class="chip" aria-pressed="false">Weekends</button>
-          <button type="button" class="chip" aria-pressed="false">Mornings</button>
-          <button type="button" class="chip" aria-pressed="false">Afternoons</button>
-          <button type="button" class="chip" aria-pressed="false">Evenings</button>
+      <div class="f"><span class="lbl" id="whenLbl">Best time for you</span>
+        <div class="chips pick1" id="days" role="radiogroup" aria-labelledby="whenLbl">
+          <button type="button" class="chip big" role="radio" aria-checked="false" aria-pressed="false">Weekday</button>
+          <button type="button" class="chip big" role="radio" aria-checked="false" aria-pressed="false">Weekend</button>
+        </div>
+        <div id="timesWrap" hidden>
+          <div class="sub-lbl" id="timesLbl">What time of day?</div>
+          <div class="chips pick1" id="times" role="radiogroup" aria-labelledby="timesLbl">
+            <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Morning</button>
+            <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Afternoon</button>
+            <button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false">Evening</button>
+          </div>
         </div>
       </div>
-      <div class="f"><label for="notes">Best days or anything else <span class="opt">(optional)</span></label><textarea id="notes" maxlength="400" placeholder="e.g. free after 3 on Thursday"></textarea></div>
+      <div class="f"><label for="notes">Best days or anything else <span class="opt">(optional)</span></label><textarea id="notes" maxlength="400" placeholder="e.g. Thursday after 3 works best"></textarea></div>
       <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" tabindex="-1" autocomplete="off"></div>
     </section>
 
@@ -269,10 +276,19 @@ $("#tiles").addEventListener("click", e => {
   t.setAttribute("aria-pressed", String(on)); on ? picks.add(id) : picks.delete(id);
   update(); if (id==="Other" && on) $("#other").focus();
 });
-$("#when").addEventListener("click", e => {
+function pickOne(group, c){
+  const was = c.getAttribute("aria-pressed")==="true";
+  group.querySelectorAll(".chip").forEach(x=>{ x.setAttribute("aria-pressed","false"); x.setAttribute("aria-checked","false"); });
+  if (!was){ c.setAttribute("aria-pressed","true"); c.setAttribute("aria-checked","true"); }
+  return !was;
+}
+$("#days").addEventListener("click", e => {
   const c = e.target.closest(".chip"); if (!c) return;
-  c.setAttribute("aria-pressed", String(c.getAttribute("aria-pressed")!=="true"));
+  const on = pickOne($("#days"), c);
+  $("#timesWrap").hidden = !on;
+  if (!on) document.querySelectorAll("#times .chip").forEach(x=>{ x.setAttribute("aria-pressed","false"); x.setAttribute("aria-checked","false"); });
 });
+$("#times").addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) pickOne($("#times"), c); });
 $("#heard").addEventListener("click", e => {
   const c = e.target.closest(".chip"); if (!c) return;
   const was = c.getAttribute("aria-pressed")==="true";
@@ -349,7 +365,7 @@ $("#bookForm").addEventListener("submit", async e => {
   if (!name){ $("#name").focus(); return showErr("Add your name so I know who's coming."); }
   if (!/^[A-Za-z0-9._]{1,30}$/.test(ig)){ $("#ig").focus(); return showErr("Add your Instagram handle so I can DM you a time."); }
   const heard = (document.querySelector('#heard .chip[aria-pressed="true"]')||{}).textContent || "";
-  const when = [...document.querySelectorAll('#when .chip[aria-pressed="true"]')].map(c=>c.textContent);
+  const when = [...document.querySelectorAll('#days .chip[aria-pressed="true"], #times .chip[aria-pressed="true"]')].map(c=>c.textContent);
   const notes = [when.length ? "Best: "+when.join(", ") : "", $("#notes").value.trim()].filter(Boolean).join(" · ").slice(0,500);
   if (!sb) return showErr("Booking isn't working right now. DM @smncutz on Instagram instead.");
   const btn = $("#sendBtn"); btn.disabled = true; btn.textContent = "Sending…";
@@ -368,7 +384,8 @@ $("#bookForm").addEventListener("submit", async e => {
 $("#again").addEventListener("click", () => {
   $("#bookForm").reset(); picks.clear(); picks.add("Haircut");
   document.querySelectorAll(".tile").forEach(t=>t.setAttribute("aria-pressed", String(t.dataset.id==="Haircut")));
-  document.querySelectorAll("#when .chip, #heard .chip").forEach(c=>{ c.setAttribute("aria-pressed","false"); if (c.hasAttribute("aria-checked")) c.setAttribute("aria-checked","false"); });
+  $("#timesWrap").hidden = true;
+  document.querySelectorAll("#days .chip, #times .chip, #heard .chip").forEach(c=>{ c.setAttribute("aria-pressed","false"); if (c.hasAttribute("aria-checked")) c.setAttribute("aria-checked","false"); });
   update(); $("#done").hidden = true; $("#bookForm").hidden = false;
 });
 })();
