@@ -197,6 +197,13 @@ a.btn{text-decoration:none;color:inherit}
 .mrow .mi span{font-size:12px;color:var(--ink-3)}
 .ma{font:500 14px var(--f-mono);white-space:nowrap}
 .ma.expense{color:var(--accent)} .ma.income{color:var(--ok)}
+.who-pick{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.who-sel{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:6px 8px;font-size:13px;max-width:100%}
+.imp{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.f .imp label.btn{text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin:0;display:inline-flex}
+.imp .hint{font-size:12px;color:var(--ink-3)}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.thumbs img{width:48px;height:48px;object-fit:cover;border-radius:6px}
 .cacts{display:flex;gap:6px;padding:0 14px 12px;flex-wrap:wrap}
 .cacts .btn.no{margin-left:auto}
 .ccard:hover{border-color:var(--ink-3)}
@@ -464,6 +471,29 @@ function apptRow(b, opts={}){
 /* ---------- booking requests (from the public booking page) ---------- */
 function agoTime(ms){ const m = Math.round((Date.now()-ms)/60000); return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"; }
 function pendingRequests(){ return (S.requests||[]).filter(r=>!S.handled.has(r.key)).sort((a,b)=>b.at-a.at); }
+function digitsOf(v){ return String(v||"").replace(/\D/g,"").slice(-10); }
+function matchClient(r){
+  const all = [...S.clients.values()], lc = v => String(v||"").trim().toLowerCase();
+  const sure = (r.ig && all.find(c=>lc(c.instagram)===lc(r.ig))) || (digitsOf(r.phone) && all.find(c=>digitsOf(c.phone)===digitsOf(r.phone))) || all.find(c=>lc(c.name)===lc(r.name));
+  if (sure) return {sure};
+  const first = lc(r.name).split(/\s+/)[0];
+  const maybe = first ? all.filter(c=>lc(c.name).split(/\s+/)[0]===first) : [];
+  return {maybe};
+}
+function linkedClient(r){
+  if (S.reqLink && r.key in S.reqLink) return S.reqLink[r.key] ? S.clients.get(S.reqLink[r.key]) : null;
+  const m = matchClient(r); return m.sure || null;
+}
+function whoPicker(r){
+  const m = matchClient(r), cur = linkedClient(r);
+  const list = [...S.clients.values()].sort((a,b)=>a.name.localeCompare(b.name));
+  const maybeIds = new Set((m.maybe||[]).map(c=>c.id));
+  let opts = '<option value="">New client</option>';
+  if (m.maybe && m.maybe.length) opts += '<optgroup label="Maybe">'+m.maybe.map(c=>'<option value="'+c.id+'"'+(cur&&cur.id===c.id?" selected":"")+'>'+esc(c.name)+(c.instagram?' (@'+esc(c.instagram)+')':'')+'</option>').join("")+'</optgroup>';
+  opts += '<optgroup label="All clients">'+list.filter(c=>!maybeIds.has(c.id)).map(c=>'<option value="'+c.id+'"'+(cur&&cur.id===c.id?" selected":"")+'>'+esc(c.name)+(c.instagram?' (@'+esc(c.instagram)+')':'')+'</option>').join("")+'</optgroup>';
+  const tag = cur ? '<span class="pill confirmed">Returning client</span>' : (m.maybe&&m.maybe.length ? '<span class="pill due">Might be '+esc(m.maybe[0].name)+'?</span>' : '<span class="pill booked">New client</span>');
+  return '<div class="who-pick">'+tag+'<label class="sr" for="who-'+r.key+'" style="position:absolute;left:-9999px">Client for '+esc(r.name)+'</label><select id="who-'+r.key+'" class="who-sel" data-req="'+r.key+'">'+opts+'</select></div>';
+}
 function requestsHtml(){
   const pend = pendingRequests();
   let h = '<div class="sec-h"><h2>New requests'+(pend.length?' <span class="count">'+pend.length+'</span>':'')+'</h2><span class="meta">from your booking page</span></div><div class="panel">';
@@ -473,7 +503,7 @@ function requestsHtml(){
       '<div>'+esc(labelFor(p))+(p.has("other")&&p.size===1?'':' · '+money(priceFor(p))+(p.has("other")?'+':''))+(r.phone?' · <span class="mono">'+esc(r.phone)+'</span>':'')+'</div>'+
       (r.other?'<div class="rn">Other: “'+esc(r.other)+'”</div>':'')+
       (r.notes?'<div class="rn">'+esc(r.notes)+'</div>':'')+
-      '<div class="rt">'+(r.at?'asked '+esc(agoTime(r.at)):'')+(r.heard?' · heard from '+esc(r.heard):'')+'</div></div>'+
+      '<div class="rt">'+(r.at?'asked '+esc(agoTime(r.at)):'')+(r.heard?' · heard from '+esc(r.heard):'')+'</div>'+whoPicker(r)+'</div>'+
       '<div class="ra"><button class="btn small primary" data-act="sched" data-id="'+r.key+'">Pick a time</button><button class="btn small ghost" data-act="dismiss" data-id="'+r.key+'">Dismiss</button></div></div>'; }).join("");
   return h + '</div>';
 }
@@ -789,11 +819,18 @@ function clientModal(id){
     field("cCut","Their cut",'<textarea id="cCut" placeholder="e.g. Low taper, #2 on sides, scissor top, natural neckline">'+esc(c.cut)+'</textarea>')+
     field("cCycle","Usual cycle (weeks)",'<input id="cCycle" type="number" min="0.5" step="0.5" inputmode="decimal" value="'+esc(c.cycleWeeks||"")+'">',"Leave blank and it'll be worked out from their visits.")+
     field("cNotes","Notes",'<textarea id="cNotes" placeholder="Allergies to products, likes a hot towel, talks football…">'+esc(c.notes)+'</textarea>')+
+    '<div class="f"><label>Photos</label><div class="imp"><label class="btn small" for="cPhotos">+ Import old pics</label><input type="file" id="cPhotos" accept="image/*" multiple hidden><span id="cPhotosLbl" class="hint">'+((c.photos||[]).length?(c.photos.length+' saved already · ')+'add more from your camera roll':'Add their past cuts from your camera roll')+'</span></div><div class="thumbs" id="cThumbs"></div></div>'+
     '<div class="err" id="cErr" hidden></div>'+
     '<div class="mfoot">'+(id?'<button type="button" class="btn danger" data-act="del-c" data-id="'+id+'">Delete client</button>':'')+
     '<div class="r"><button type="button" class="btn" data-act="close-modal">Cancel</button><button class="btn primary" type="submit">Save client</button></div></div>'+
     '</form></div></div>';
   $("#cName").focus();
+  let picked = [];
+  $("#cPhotos").onchange = e => {
+    picked = picked.concat([...e.target.files]); e.target.value = "";
+    $("#cPhotosLbl").textContent = picked.length+" photo"+(picked.length>1?"s":"")+" ready · they upload when you save";
+    $("#cThumbs").replaceChildren(...picked.slice(0,12).map(f=>{ const i = document.createElement("img"); i.src = URL.createObjectURL(f); i.alt = ""; return i; }));
+  };
   $("#cForm").onsubmit = async e => {
     e.preventDefault();
     const body = Object.assign({}, c, {
@@ -805,9 +842,22 @@ function clientModal(id){
     if (!id){ body.createdAt = new Date().toISOString(); body.photos = []; }
     try {
       const ref = id ? S.db.collection("clients").doc(id) : S.db.collection("clients").doc();
-      await ref.set(body); closeModal(); toast(id?"Client saved":"Client added");
-      if (!id) { S.open = ref.id; }
-    } catch(err){ showErr("cErr", err); }
+      const btn = $("#cForm").querySelector("[type=submit]"); btn.disabled = true;
+      await ref.set(body);
+      if (picked.length){
+        btn.textContent = "Uploading photos…";
+        const added = [], prevOpen = S.open; S.open = ref.id;
+        for (const f of picked){
+          try { const blob = await shrink(f); const r = await S.assets.upload(blob);
+            added.push({id:r.id, at: f.lastModified ? iso(new Date(f.lastModified)) : TODAY}); } catch(_){}
+        }
+        S.open = prevOpen;
+        if (added.length){ const cur = S.clients.get(ref.id) || body; await S.db.collection("clients").doc(ref.id).update({photos:[...(cur.photos||[]), ...added]}); }
+        toast((id?"Client saved":"Client added")+" · "+added.length+" photo"+(added.length===1?"":"s")+" imported");
+      } else toast(id?"Client saved":"Client added");
+      closeModal();
+      if (!id) { S.open = ref.id; renderSheet(); }
+    } catch(err){ const b2 = $("#cForm [type=submit]"); if (b2){ b2.disabled = false; b2.textContent = "Save client"; } showErr("cErr", err); }
   };
 }
 
@@ -854,13 +904,17 @@ function bookingModal(id, preset={}){
         cid = ref.id;
       }
       if (!cid){ btn.disabled = false; return; }
+      if (preset.reqKey && sel.value!=="__new"){ const ex = S.clients.get(cid), patch = {};
+        if (ex && !ex.instagram && preset.reqIg) patch.instagram = preset.reqIg;
+        if (ex && !ex.phone && preset.reqPhone) patch.phone = preset.reqPhone;
+        if (Object.keys(patch).length) await S.db.collection("clients").doc(cid).update(patch); }
       const body = Object.assign({}, b, {
         clientId: cid, clientName: clientName(cid, $("#bNewName").value.trim()), date: $("#bDate").value, time: $("#bTime").value,
         service: $("#bService").value.trim() || labelFor(picks), price: parseFloat($("#bPrice").value)||0, mins: minsFor(picks),
         notes: $("#bNotes").value.trim(), status: id ? $("#bStatus").value : "booked", paid: id ? $("#bPaid").value==="1" : false,
       });
       if (preset.reqKey){ body.source = "form"; body.requestKey = preset.reqKey; }
-      delete body.id; delete body.picks; delete body.newName; delete body.newPhone; delete body.newIg; delete body.reqKey;
+      delete body.id; delete body.picks; delete body.newName; delete body.newPhone; delete body.newIg; delete body.reqIg; delete body.reqPhone; delete body.reqKey;
       const ref = id ? S.db.collection("bookings").doc(id) : S.db.collection("bookings").doc();
       await ref.set(body);
       if (preset.reqKey) await S.db.collection("requests").doc(preset.reqKey).set({status:"scheduled", bookingId:ref.id, at:new Date().toISOString()});
@@ -1011,11 +1065,8 @@ document.addEventListener("click", async e => {
     }
     case "sched": {
       const r = (S.requests||[]).find(x=>x.key===id); if (!r) return;
-      const digits = v => String(v||"").replace(/\D/g,"").slice(-10);
-      const m = [...S.clients.values()].find(c=>r.ig && (c.instagram||"").toLowerCase()===r.ig.toLowerCase()) ||
-                [...S.clients.values()].find(c=>r.phone && digits(c.phone) && digits(c.phone)===digits(r.phone)) ||
-                [...S.clients.values()].find(c=>c.name.trim().toLowerCase()===r.name.trim().toLowerCase());
-      bookingModal(null, {clientId:m?m.id:undefined, newName:m?undefined:r.name, newIg:m?undefined:r.ig, newPhone:m?undefined:r.phone, picks:[...pickFromText(r.wants)], notes:[r.other?"Other: "+r.other:"", r.notes].filter(Boolean).join(" · "), reqKey:r.key});
+      const m = linkedClient(r);
+      bookingModal(null, {reqIg:r.ig, reqPhone:r.phone, clientId:m?m.id:undefined, newName:m?undefined:r.name, newIg:m?undefined:r.ig, newPhone:m?undefined:r.phone, picks:[...pickFromText(r.wants)], notes:[r.other?"Other: "+r.other:"", r.notes].filter(Boolean).join(" · "), reqKey:r.key});
       break;
     }
     case "dismiss": {
@@ -1061,6 +1112,7 @@ document.addEventListener("input", e => {
   if (e.target.id==="q"){ S.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos,pos); }
 });
 document.addEventListener("change", e => {
+  if (e.target.classList && e.target.classList.contains("who-sel")){ (S.reqLink = S.reqLink || {})[e.target.dataset.req] = e.target.value; render(); return; }
   if (e.target.id==="sortSel"){ S.sort = e.target.value; try{localStorage.setItem("cb.sort",S.sort)}catch(_){} render(); }
 });
 document.addEventListener("keydown", e => {
