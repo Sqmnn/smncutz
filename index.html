@@ -133,6 +133,8 @@ a.tag:hover{border-color:var(--ink-3)}
 .done p b{color:var(--ink);font-size:18px;display:inline-block;margin-bottom:4px}
 footer{text-align:center;color:var(--ink-3);font-size:13px}
 footer a{color:inherit}
+footer .secret{display:block;width:max-content;margin:18px auto 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);opacity:.45;text-decoration:none;padding:6px 10px}
+footer .secret:hover{opacity:1}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="/config.js"></script>
@@ -245,7 +247,7 @@ footer a{color:inherit}
     </div>
   </section>
 
-  <footer>SMN Cutz · Jersey · <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">Instagram</a></footer>
+  <footer>SMN Cutz · Jersey · <a href="https://instagram.com/smncutz" target="_blank" rel="noopener">Instagram</a><a class="secret" href="/admin">Admin</a></footer>
 </main>
 <div id="lb"></div>
 
